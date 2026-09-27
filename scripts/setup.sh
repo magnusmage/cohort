@@ -8,7 +8,9 @@ set -eu
 TEMPLATE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/vault-template"
 
 say()  { printf '%s\n' "$*"; }
-ask()  { printf '%s [%s]: ' "$1" "$2"; IFS= read -r REPLY; REPLY=${REPLY:-$2}; }
+# The prompt goes to stderr so callers can read the answer from REPLY
+# without command substitution capturing the prompt text.
+ask()  { printf '%s [%s]: ' "$1" "$2" >&2; IFS= read -r REPLY; REPLY=${REPLY:-$2}; }
 
 command -v git >/dev/null 2>&1 || { say "error: git is required."; exit 1; }
 
@@ -18,7 +20,8 @@ say "except your own git remote. You choose the visibility, the access list"
 say "(via GitHub collaborators), and how the connector may behave."
 
 # --- 1. Vault location ---------------------------------------------------
-VAULT_DIR=$(ask "Vault directory (created from vault-template if empty)" "./vault")
+ask "Vault directory (created from vault-template if empty)" "./vault"
+VAULT_DIR=$REPLY
 if [ ! -d "$VAULT_DIR" ]; then
   mkdir -p "$VAULT_DIR"
 fi
@@ -37,20 +40,24 @@ if [ ! -d .git ]; then
 fi
 
 # --- 3. Visibility (declared in VAULT.md, drives redaction strictness) ---
-VIS=$(ask "Visibility: private or public (public enables stricter redaction + filename review)" "private")
+ask "Visibility: private or public (public enables stricter redaction + filename review)" "private"
+VIS=$REPLY
 case "$VIS" in private|public) ;; *) say "error: visibility must be 'private' or 'public'"; exit 1;; esac
 # Portable in-place edit of the visibility line in VAULT.md frontmatter.
 sed "s/^visibility:.*/visibility: $VIS/" VAULT.md > VAULT.md.tmp && mv VAULT.md.tmp VAULT.md
 say "VAULT.md visibility set to: $VIS"
 
 # --- 4. The three consent choices (ADR-0004) -----------------------------
-SCOPE=$(ask "Activation scope: 'session' (act only when you invoke the connector) or 'project' (auto-load in this project)" "session")
+ask "Activation scope: 'session' (act only when you invoke the connector) or 'project' (auto-load in this project)" "session"
+SCOPE=$REPLY
 case "$SCOPE" in session|project) ;; *) say "error: scope must be 'session' or 'project'"; exit 1;; esac
 
-MODE=$(ask "Writeback mode: 'ask' (propose only when you request) or 'auto-draft' (draft at session end; you still approve every commit)" "ask")
+ask "Writeback mode: 'ask' (propose only when you request) or 'auto-draft' (draft at session end; you still approve every commit)" "ask"
+MODE=$REPLY
 case "$MODE" in ask|auto-draft) ;; *) say "error: mode must be 'ask' or 'auto-draft'"; exit 1;; esac
 
-CONTENT=$(ask "Content types: 'text' (markdown only) or 'text+files' (also read vault attachments)" "text")
+ask "Content types: 'text' (markdown only) or 'text+files' (also read vault attachments)" "text"
+CONTENT=$REPLY
 case "$CONTENT" in text|text+files) ;; *) say "error: content must be 'text' or 'text+files'"; exit 1;; esac
 
 cat > .cohort.local.toml <<EOF
