@@ -1,0 +1,2 @@
+# Per-user client config — never commit (SECURITY.md §8, ADR-0004).
+.cohort.local.toml

@@ -1,0 +1,9 @@
+# Repo hygiene
+/downloads/
+.DS_Store
+Thumbs.db
+*.log
+
+# Internal working docs (private): strategy, sessions, ADRs, research.
+# Never push these. See ADR-0006 (internal/decisions).
+/internal/

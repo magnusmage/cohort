@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "Cohort: Shared Context for AI Chatbots"
+message: "If you use Cohort or cite its design, please cite it as below."
+type: software
+authors:
+  - family-names: "Sarmad"
+repository-code: "https://github.com/magnusmage/cohort"
+url: "https://cohort.ivalice.com"
+license: Apache-2.0
+version: 0.1.0
+date-released: "2026-09-28"
+keywords:
+  - ai-memory
+  - agent-skills
+  - shared-context
+  - markdown
+  - git
+abstract: "An open protocol and tooling for shared AI chatbot context: one git repository of markdown, shared between trusted GitHub users, so every teammate's AI (regardless of account, plan, or platform) reads and writes the same team memory with human-in-the-loop review."

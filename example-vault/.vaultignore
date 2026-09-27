@@ -1,0 +1,12 @@
+# Never-sync patterns. The redaction scan fails a commit closed on any match.
+# Add team-specific patterns below; keep this file versioned with the vault.
+
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+secrets/
+credentials/
