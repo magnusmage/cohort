@@ -46,12 +46,18 @@ for f in "$VAULT"/memory/*.md "$VAULT"/memory/decisions/*.md; do
   [ -e "$f" ] && check_frontmatter "$f"
 done
 # Sessions: year/month nesting, YYYY-MM-DD-<author>.md naming
-find "$VAULT/sessions" -name '*.md' | while IFS= read -r f; do
+# The list goes through a temp file, not a pipeline, so the loop runs in
+# this shell and failures set the exit code (a find | while pipe would run
+# the loop in a subshell and silently swallow them).
+session_list="${TMPDIR:-/tmp}/cohort-validate-$$.list"
+find "$VAULT/sessions" -name '*.md' > "$session_list" 2>/dev/null
+while IFS= read -r f; do
   rel=${f#"$VAULT/sessions/"}
   echo "$rel" | grep -qE '^[0-9]{4}/[0-9]{2}/[0-9]{4}-[0-9]{2}-[0-9]{2}-.+\.md$' \
     || err "session file misnamed or misplaced: sessions/$rel"
   check_frontmatter "$f"
-done
+done < "$session_list"
+rm -f "$session_list"
 
 # 5. Never-delete rule: nothing in _archive may be empty by accident
 [ -d "$VAULT/_archive" ] && ok "_archive/ exists (content optional)"
