@@ -5,7 +5,11 @@
 # Boring tech on purpose (TECHNICAL.md P5): POSIX sh + git only.
 set -eu
 
-TEMPLATE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/vault-template"
+# Resolved up front, while $0's directory still means something: after the
+# cd into the vault, a relative invocation (sh scripts/setup.sh) breaks.
+REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+TEMPLATE_DIR="$REPO_ROOT/vault-template"
+RULES_SRC="$REPO_ROOT/security/redaction-rules.toml"
 
 say()  { printf '%s\n' "$*"; }
 # The prompt goes to stderr so callers can read the answer from REPLY
@@ -80,7 +84,6 @@ say "wrote .cohort.local.toml (gitignored)"
 # --- 5. Pre-commit redaction hook ----------------------------------------
 # The rules live in the vault, versioned with it (SECURITY.md section 3).
 # Provision them from this Cohort checkout; fail closed if the source is gone.
-RULES_SRC="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/security/redaction-rules.toml"
 [ -f "$RULES_SRC" ] || { say "error: redaction rules not found at $RULES_SRC"; say "error: cannot provision the vault without them (fail closed)."; exit 1; }
 mkdir -p security
 cp "$RULES_SRC" security/redaction-rules.toml
