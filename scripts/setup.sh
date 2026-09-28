@@ -73,6 +73,14 @@ grep -qxF '.cohort.local.toml' .gitignore 2>/dev/null || echo '.cohort.local.tom
 say "wrote .cohort.local.toml (gitignored)"
 
 # --- 5. Pre-commit redaction hook ----------------------------------------
+# The rules live in the vault, versioned with it (SECURITY.md section 3).
+# Provision them from this Cohort checkout; fail closed if the source is gone.
+RULES_SRC="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/security/redaction-rules.toml"
+[ -f "$RULES_SRC" ] || { say "error: redaction rules not found at $RULES_SRC"; say "error: cannot provision the vault without them (fail closed)."; exit 1; }
+mkdir -p security
+cp "$RULES_SRC" security/redaction-rules.toml
+say "provisioned security/redaction-rules.toml"
+
 HOOK=.git/hooks/pre-commit
 cat > "$HOOK" <<'EOF'
 #!/usr/bin/env sh
