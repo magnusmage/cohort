@@ -9,8 +9,9 @@ TEMPLATE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/vault-template"
 
 say()  { printf '%s\n' "$*"; }
 # The prompt goes to stderr so callers can read the answer from REPLY
-# without command substitution capturing the prompt text.
-ask()  { printf '%s [%s]: ' "$1" "$2" >&2; IFS= read -r REPLY; REPLY=${REPLY:-$2}; }
+# without command substitution capturing the prompt text. An exhausted
+# stdin (EOF) must fall through to the default, not abort under set -e.
+ask()  { printf '%s [%s]: ' "$1" "$2" >&2; IFS= read -r REPLY || true; REPLY=${REPLY:-$2}; }
 
 command -v git >/dev/null 2>&1 || { say "error: git is required."; exit 1; }
 
