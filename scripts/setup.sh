@@ -96,7 +96,7 @@ cat > "$HOOK" <<'EOF'
 RULES="$(git rev-parse --show-toplevel)/security/redaction-rules.toml"
 [ -f "$RULES" ] || RULES="$(git rev-parse --show-toplevel)/../security/redaction-rules.toml"
 if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks git --pre-commit --config "$RULES" --verbose
+  gitleaks protect --staged --config "$RULES" --verbose
 else
   echo "cohort: gitleaks not found; install it (https://github.com/gitleaks/gitleaks)" >&2
   echo "cohort: refusing to commit without the redaction scan (fail closed)." >&2
