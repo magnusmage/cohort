@@ -38,6 +38,10 @@ if [ ! -d .git ]; then
   git init -q
   say "git repository initialized"
 fi
+# No silent synthetic identities: if git cannot resolve an author, tell the
+# user how to set one repo-locally in the final next-steps block.
+NO_IDENT=0
+git var GIT_AUTHOR_IDENT >/dev/null 2>&1 || NO_IDENT=1
 
 # --- 3. Visibility (declared in VAULT.md, drives redaction strictness) ---
 ask "Visibility: private or public (public enables stricter redaction + filename review)" "private"
@@ -114,3 +118,10 @@ say "1. Review $VAULT_DIR/VAULT.md and set your vault name and members."
 say "2. Create a private GitHub repo and: git remote add origin <url> && git push -u origin main"
 say "3. Add teammates as collaborators on GitHub. That IS the sharing mechanism."
 say "4. Install the connector: connectors/kimi/SKILL.md (see its install notes)."
+if [ "$NO_IDENT" = "1" ]; then
+  say ""
+  say "Note: git has no author identity on this machine. Set it repo-locally"
+  say "or your first commit will be refused:"
+  say "  git -C $VAULT_DIR config user.name \"Your Name\""
+  say "  git -C $VAULT_DIR config user.email \"you@example.com\""
+fi
