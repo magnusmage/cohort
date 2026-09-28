@@ -5,12 +5,17 @@
 # Boring tech on purpose (TECHNICAL.md P5): POSIX sh + git only.
 set -eu
 
-TEMPLATE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)/vault-template"
+# Resolved up front, while $0's directory still means something: after the
+# cd into the vault, a relative invocation (sh scripts/setup.sh) breaks.
+REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+TEMPLATE_DIR="$REPO_ROOT/vault-template"
+RULES_SRC="$REPO_ROOT/security/redaction-rules.toml"
 
 say()  { printf '%s\n' "$*"; }
 # The prompt goes to stderr so callers can read the answer from REPLY
-# without command substitution capturing the prompt text.
-ask()  { printf '%s [%s]: ' "$1" "$2" >&2; IFS= read -r REPLY; REPLY=${REPLY:-$2}; }
+# without command substitution capturing the prompt text. An exhausted
+# stdin (EOF) must fall through to the default, not abort under set -e.
+ask()  { printf '%s [%s]: ' "$1" "$2" >&2; IFS= read -r REPLY || true; REPLY=${REPLY:-$2}; }
 
 command -v git >/dev/null 2>&1 || { say "error: git is required."; exit 1; }
 
@@ -38,6 +43,10 @@ if [ ! -d .git ]; then
   git init -q
   say "git repository initialized"
 fi
+# No silent synthetic identities: if git cannot resolve an author, tell the
+# user how to set one repo-locally in the final next-steps block.
+NO_IDENT=0
+git var GIT_AUTHOR_IDENT >/dev/null 2>&1 || NO_IDENT=1
 
 # --- 3. Visibility (declared in VAULT.md, drives redaction strictness) ---
 ask "Visibility: private or public (public enables stricter redaction + filename review)" "private"
@@ -73,6 +82,13 @@ grep -qxF '.cohort.local.toml' .gitignore 2>/dev/null || echo '.cohort.local.tom
 say "wrote .cohort.local.toml (gitignored)"
 
 # --- 5. Pre-commit redaction hook ----------------------------------------
+# The rules live in the vault, versioned with it (SECURITY.md section 3).
+# Provision them from this Cohort checkout; fail closed if the source is gone.
+[ -f "$RULES_SRC" ] || { say "error: redaction rules not found at $RULES_SRC"; say "error: cannot provision the vault without them (fail closed)."; exit 1; }
+mkdir -p security
+cp "$RULES_SRC" security/redaction-rules.toml
+say "provisioned security/redaction-rules.toml"
+
 HOOK=.git/hooks/pre-commit
 cat > "$HOOK" <<'EOF'
 #!/usr/bin/env sh
@@ -80,7 +96,7 @@ cat > "$HOOK" <<'EOF'
 RULES="$(git rev-parse --show-toplevel)/security/redaction-rules.toml"
 [ -f "$RULES" ] || RULES="$(git rev-parse --show-toplevel)/../security/redaction-rules.toml"
 if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks git --pre-commit --config "$RULES" --verbose
+  gitleaks protect --staged --config "$RULES" --verbose
 else
   echo "cohort: gitleaks not found; install it (https://github.com/gitleaks/gitleaks)" >&2
   echo "cohort: refusing to commit without the redaction scan (fail closed)." >&2
@@ -106,3 +122,10 @@ say "1. Review $VAULT_DIR/VAULT.md and set your vault name and members."
 say "2. Create a private GitHub repo and: git remote add origin <url> && git push -u origin main"
 say "3. Add teammates as collaborators on GitHub. That IS the sharing mechanism."
 say "4. Install the connector: connectors/kimi/SKILL.md (see its install notes)."
+if [ "$NO_IDENT" = "1" ]; then
+  say ""
+  say "Note: git has no author identity on this machine. Set it repo-locally"
+  say "or your first commit will be refused:"
+  say "  git -C $VAULT_DIR config user.name \"Your Name\""
+  say "  git -C $VAULT_DIR config user.email \"you@example.com\""
+fi

@@ -1,0 +1,58 @@
+# Cohort redaction rules for gitleaks (https://github.com/gitleaks/gitleaks)
+# Versioned with the repo. The connector MUST refuse to commit (fail closed)
+# on any hit. Mirrors SECURITY.md §3.
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+
+title = "cohort-redaction-rules"
+
+[extend]
+# Built-in rule sets cover common providers; we extend rather than reinvent.
+useDefault = true
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI-style API key"
+regex = '''sk-[a-zA-Z0-9_-]{20,}'''
+tags = ["key"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS access key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "aws"]
+
+[[rules]]
+id = "github-pat"
+description = "GitHub personal access token"
+regex = '''gh[pousr]_[a-zA-Z0-9]{20,}'''
+tags = ["key", "github"]
+
+[[rules]]
+id = "google-api-key"
+description = "Google API key"
+regex = '''AIza[0-9A-Za-z_-]{35}'''
+tags = ["key", "google"]
+
+[[rules]]
+id = "jwt"
+description = "JSON Web Token"
+regex = '''eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'''
+tags = ["token"]
+
+[[rules]]
+id = "private-key-block"
+description = "Private key PEM block"
+regex = '''-----BEGIN [A-Z ]*PRIVATE KEY-----'''
+tags = ["key", "pem"]
+
+[[rules]]
+id = "credentialed-url"
+description = "Connection string with embedded credentials"
+regex = '''[a-z][a-z0-9+.-]*://[^/\s:]+:[^/\s@]+@'''
+tags = ["credentials"]
+
+[[rules]]
+id = "dotenv-secret-assignment"
+description = ".env-style secret assignment"
+regex = '''(?i)(SECRET|TOKEN|KEY|PASSWORD|PASS)[A-Z0-9_]*\s*=\s*[^\s#]+'''
+tags = ["env", "secret"]

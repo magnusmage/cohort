@@ -66,6 +66,8 @@ vault/
 │                            Humans add these manually via git; connectors
 │                            never auto-commit binaries.
 ├── .vaultignore             Never-sync patterns (secrets, env files, etc.)
+├── security/
+│   └── redaction-rules.toml Redaction rules, versioned with the vault (SECURITY.md §3)
 ├── .cohort.local.toml       Gitignored per-user client prefs (scope, writeback mode)
 └── _archive/                Rotated or superseded content, never deleted
 ```
