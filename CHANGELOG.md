@@ -3,6 +3,43 @@
 All notable changes to this project. Human-written summaries only, per
 project policy.
 
+## [Unreleased]
+
+Hardening pass over the first round of dogfood findings.
+
+### Added
+
+- Email and phone patterns in the redaction ruleset, scoped to vault
+  content paths, implementing the stricter-public promise of SECURITY.md
+  section 3. Mandatory for public vaults.
+- The example vault now ships its copy of `security/redaction-rules.toml`.
+- `VAULT.md` manifest fields are pinned in the spec: `name`, and the
+  optional `review_gated` boolean, which is the single documented signal
+  that routes writebacks through pull requests.
+- Optional `proposed_by:` frontmatter field naming the drafting assistant
+  on AI-drafted, human-approved writebacks. `author:` remains the
+  approving human.
+
+### Fixed
+
+- The setup wizard initializes vaults on the `main` branch
+  (`git init -b main`, with a fallback for git older than 2.28),
+  matching what the docs already promised.
+- The example and template manifests used `vault:` for the vault name;
+  the pinned key is `name:`.
+
+### Changed
+
+- Load now requires the vault to be its own git repository; a connector
+  refuses to pull when the vault path resolves into a parent repo.
+- The provenance header is quoted verbatim and identically in
+  TECHNICAL.md, SECURITY.md, and the reference connector.
+- Session recall is pinned at the 5 most recent sessions, and the v1
+  context budget is defined as that bounded set (a configurable token
+  budget is post-v1 scope).
+- CONTRIBUTING.md records the shell pitfalls found while dogfooding
+  (`check-ignore --no-index`, `$0` path derivation, piped exit codes).
+
 ## [0.1.0] - 2026-09-28
 
 First public release of the protocol and tooling.

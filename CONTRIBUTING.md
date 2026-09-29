@@ -19,6 +19,20 @@ reports, and dogfood reports from real teams.
 Conventional Commits: `feat:`, `fix:`, `docs:`, `security:`, `memory:`.
 One logical change per commit, message in the imperative.
 
+## Shell script notes
+
+Three pitfalls this project has shipped and fixed; check for them when
+editing `scripts/`:
+
+- `git check-ignore` silently skips tracked paths. When checking an ignore
+  rule against a file that might be tracked, pass `--no-index`.
+- Derive paths from `$0` only before the script changes directory. Capture
+  the repo root at the top; a relative invocation (`sh scripts/setup.sh`)
+  breaks `$0`-relative lookups after a `cd`.
+- Read the exit code of a scanner (gitleaks) from the command itself, never
+  from a pipeline: `gitleaks ... | tail` reports `tail`'s status and
+  swallows a non-zero gitleaks exit. Route through a temp file instead.
+
 ## Pull requests
 
 - One approving review to merge; security-sensitive changes get a security
