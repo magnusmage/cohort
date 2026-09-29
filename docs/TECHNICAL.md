@@ -81,10 +81,16 @@ vault/
   strictness (SECURITY.md sections 3-4).
 - `members` (required): the team, as handle/name/role entries.
 - `rules` (optional): free-text house rules for the vault.
+- `review_gated` (optional boolean, v1): when `true`, writebacks ship via
+  pull request with at least one other human approving, never as a direct
+  commit to the vault's main branch (SECURITY.md section 4). This field is
+  the single documented review-gating signal; the connector reads it from
+  `VAULT.md` on every run.
 
 File format rules:
 
 - All files are UTF-8 markdown with YAML frontmatter (`author`, `date`, `tags`, `supersedes`).
+- `author` records the approving human, who is accountable for what enters team memory. An AI-drafted writeback may name its drafter in an optional `proposed_by:` frontmatter field, so provenance survives without blurring accountability.
 - Session logs are append-only. Git preserves history anyway.
 - Decisions are immutable once merged. Superseding a decision creates a new file with a `supersedes:` pointer; nothing is deleted.
 - `_archive/` is the only destination for removal. The vault never forgets, it only retires.
@@ -115,7 +121,7 @@ Session end (propose):
 
 1. The connector drafts a writeback proposal: new facts, decisions made, open threads.
 2. It always shows the proposal to the human first. The human edits, approves, or rejects.
-3. On approval: write files per schema, run the redaction scan (SECURITY.md), commit with the convention, push. Review-gated teams open a PR instead of pushing directly.
+3. On approval: write files per schema, run the redaction scan (SECURITY.md), commit with the convention, push. When `VAULT.md` sets `review_gated: true`, the writeback ships via a pull request, never as a direct commit to the vault's main branch.
 
 ## 6. Connector specification
 
@@ -125,7 +131,7 @@ standard (YAML frontmatter + markdown instructions). It must:
 | Requirement | Detail |
 |---|---|
 | Load | Implement the session-start lifecycle above |
-| Propose | Implement the session-end lifecycle; never write without approval |
+| Propose | Implement the session-end lifecycle; never write without approval. Read `review_gated` from `VAULT.md` on every run: when `true`, writebacks ship via PR, never as a direct commit to the vault's main branch |
 | Respect context budget | Load at or under the configured token budget; summarize old sessions, do not paste them |
 | Redact | Apply the redaction rules before any commit |
 | Fail closed | Refuse and explain on: secrets detected, schema violation, injection patterns in vault content |

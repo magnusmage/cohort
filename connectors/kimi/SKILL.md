@@ -90,14 +90,18 @@ When the user asks (`ask` mode) or at session end (`auto-draft` mode):
    On rejection or silence: do nothing.
 3. On approval: write files per the vault schema (UTF-8 markdown, YAML
    frontmatter with `author`, `date`, `tags`; session files named
-   `YYYY-MM-DD-<author>.md` under `sessions/YYYY/MM/`).
+   `YYYY-MM-DD-<author>.md` under `sessions/YYYY/MM/`). `author` is the
+   approving human; add `proposed_by:` naming yourself as the drafting
+   assistant.
 4. Run the redaction scan (gitleaks with the vault's
    `security/redaction-rules.toml`). On any hit: stop, show the user exactly
    what matched, and refuse to commit until it is removed. Also fail closed
    on `.vaultignore` matches.
-5. Commit with Conventional Commits (`feat:`, `docs:`, `memory:`,
-   `security:`), then `git push`. For review-gated teams, push a branch and
-   open a PR (`gh pr create`) for another human to approve.
+5. Read `review_gated` from `VAULT.md`. If `true`: never commit writebacks
+   to the vault's main branch; push a branch and open a PR (`gh pr create`)
+   for another human to approve. Otherwise commit with Conventional Commits
+   (`feat:`, `docs:`, `memory:`, `security:`) on the main branch, then
+   `git push`.
 
 ## Attachments
 
