@@ -31,7 +31,10 @@ The connector must refuse to commit (fail closed) if proposed content matches:
   assignments where the variable name contains SECRET, TOKEN, KEY, PASSWORD,
   or PASS followed by an equals sign and a value
 - High-entropy strings flagged by an entropy check (configurable threshold)
-- Email and phone patterns when the vault is marked `visibility: public`
+- Email addresses and phone numbers, matched by conservative patterns scoped
+  to vault content paths. These rules are mandatory when the vault is marked
+  `visibility: public`; private vaults may relax them in their own copy of
+  the rules file
 
 Scan tooling: gitleaks in a pre-commit hook plus CI. The rules live in
 `security/redaction-rules.toml`, versioned with the repo. The pre-commit hook

@@ -9,6 +9,9 @@ title = "cohort-redaction-rules"
 # Built-in rule sets cover common providers; we extend rather than reinvent.
 useDefault = true
 
+# Note: for sk- shaped strings the extended default ruleset's
+# generic-api-key rule also matches and is usually the id gitleaks reports.
+# Both rules block the commit; only the reported id differs (cosmetic).
 [[rules]]
 id = "openai-api-key"
 description = "OpenAI-style API key"
@@ -56,3 +59,20 @@ id = "dotenv-secret-assignment"
 description = ".env-style secret assignment"
 regex = '''(?i)(SECRET|TOKEN|KEY|PASSWORD|PASS)[A-Z0-9_]*\s*=\s*[^\s#]+'''
 tags = ["env", "secret"]
+
+# PII rules (SECURITY.md section 3): mandatory for public vaults. Scoped to
+# vault content paths so the same file stays clean when it scans a tooling
+# repo whose docs legitimately contain contact-shaped strings.
+[[rules]]
+id = "email-address"
+description = "Email address in vault content (mandatory for public vaults)"
+regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'''
+path = '''(^|/)(memory|sessions|attachments|_archive)/|(^|/)VAULT\.md$'''
+tags = ["pii", "email"]
+
+[[rules]]
+id = "phone-number"
+description = "International-format phone number in vault content (mandatory for public vaults)"
+regex = '''\+[1-9][0-9 .()\-]{6,14}[0-9]'''
+path = '''(^|/)(memory|sessions|attachments|_archive)/|(^|/)VAULT\.md$'''
+tags = ["pii", "phone"]
