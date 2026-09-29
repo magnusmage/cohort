@@ -1,5 +1,5 @@
 ---
-vault: "Northwind Robotics (SYNTHETIC EXAMPLE)"
+name: "Northwind Robotics (SYNTHETIC EXAMPLE)"
 format_version: "1.0.0"
 visibility: public
 members:

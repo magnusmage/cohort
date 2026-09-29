@@ -1,5 +1,5 @@
 ---
-vault: "<vault-name>"
+name: "<vault-name>"
 format_version: "1.0.0"
 visibility: private
 members:

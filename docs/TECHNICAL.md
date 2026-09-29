@@ -72,6 +72,16 @@ vault/
 └── _archive/                Rotated or superseded content, never deleted
 ```
 
+`VAULT.md` frontmatter is the vault manifest. Fields:
+
+- `name` (required): the vault's display name. The key is pinned as
+  `name:`.
+- `format_version` (required): vault schema semver, `"1.x"` for v1.
+- `visibility` (required): `private` or `public`; drives redaction
+  strictness (SECURITY.md sections 3-4).
+- `members` (required): the team, as handle/name/role entries.
+- `rules` (optional): free-text house rules for the vault.
+
 File format rules:
 
 - All files are UTF-8 markdown with YAML frontmatter (`author`, `date`, `tags`, `supersedes`).
