@@ -95,7 +95,12 @@ File format rules:
 
 Session start (load):
 
-1. The connector runs `git pull` on the vault.
+1. The connector verifies that the vault is its own git repository:
+   `git rev-parse --show-toplevel` for the vault path must resolve to the
+   vault directory itself. If it resolves to anything else (for example a
+   parent repository the vault happens to sit inside), the connector
+   refuses with a clear message; silently syncing a parent repo is a
+   fail-open bug. Only then does it run `git pull` on the vault.
 2. It reads `VAULT.md`, checks the format version, and aborts on a major version mismatch.
 3. It loads bounded context: `facts.md` + `pointers.md` + the last few session summaries + relevant decisions by tag or recency. Never the whole vault (context-window budget, P6).
 4. It injects the context under this exact provenance header (the reference
