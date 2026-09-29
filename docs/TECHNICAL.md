@@ -108,7 +108,7 @@ Session start (load):
    refuses with a clear message; silently syncing a parent repo is a
    fail-open bug. Only then does it run `git pull` on the vault.
 2. It reads `VAULT.md`, checks the format version, and aborts on a major version mismatch.
-3. It loads bounded context: `facts.md` + `pointers.md` + the last few session summaries + relevant decisions by tag or recency. Never the whole vault (context-window budget, P6).
+3. It loads bounded context: `facts.md` + `pointers.md` + the 5 most recent session summaries + relevant decisions by tag or recency. Never the whole vault (context-window budget, P6).
 4. It injects the context under this exact provenance header (the reference
    wording lives in `connectors/kimi/SKILL.md`):
 
@@ -132,7 +132,7 @@ standard (YAML frontmatter + markdown instructions). It must:
 |---|---|
 | Load | Implement the session-start lifecycle above |
 | Propose | Implement the session-end lifecycle; never write without approval. Read `review_gated` from `VAULT.md` on every run: when `true`, writebacks ship via PR, never as a direct commit to the vault's main branch |
-| Respect context budget | Load at or under the configured token budget; summarize old sessions, do not paste them |
+| Respect context budget | Load the bounded set only: `facts.md`, `pointers.md`, the 5 most recent sessions, tag-matched decisions. In v1 that set is the budget; there is no configurable token budget (post-v1 scope). Summarize old sessions, do not paste them |
 | Redact | Apply the redaction rules before any commit |
 | Fail closed | Refuse and explain on: secrets detected, schema violation, injection patterns in vault content |
 | Declare platform | Frontmatter `metadata.platform`, `metadata.tested_versions` |
