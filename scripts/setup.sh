@@ -40,8 +40,16 @@ cd "$VAULT_DIR"
 
 # --- 2. git repo ---------------------------------------------------------
 if [ ! -d .git ]; then
-  git init -q
-  say "git repository initialized"
+  # Docs and the next-steps block promise main; make it true. init -b needs
+  # git 2.28+. On older git, point HEAD at main directly: symbolic-ref works
+  # on an unborn branch in every git (branch -m only since 2.30).
+  if git init -q -b main 2>/dev/null; then
+    :
+  else
+    git init -q
+    git symbolic-ref HEAD refs/heads/main
+  fi
+  say "git repository initialized (default branch: main)"
 fi
 # No silent synthetic identities: if git cannot resolve an author, tell the
 # user how to set one repo-locally in the final next-steps block.
