@@ -64,6 +64,10 @@ English docs stabilize.
 └── docs/                The public spec
 ```
 
+The example vault ships without a client config on purpose: a connector
+refuses to LOAD until `scripts/setup.sh` (or you, manually) writes a
+gitignored `.cohort.local.toml` into it (TECHNICAL.md §6a).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Commits use Conventional Commits and
