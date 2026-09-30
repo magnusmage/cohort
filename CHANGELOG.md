@@ -25,13 +25,22 @@ Hardening pass over the first round of dogfood findings.
 - The setup wizard initializes vaults on the `main` branch
   (`git init -b main`, with a fallback for git older than 2.28),
   matching what the docs already promised.
+- The setup wizard accepts a freshly cloned empty repository: a
+  directory containing only `.git` now counts as empty and receives the
+  template copy.
+- The visibility choice now also updates the `VAULT.md` body bullet, not
+  just the frontmatter.
 - The example and template manifests used `vault:` for the vault name;
   the pinned key is `name:`.
 
 ### Changed
 
 - Load now requires the vault to be its own git repository; a connector
-  refuses to pull when the vault path resolves into a parent repo.
+  refuses to pull when the vault path resolves into a parent repo. The
+  verification notes path-form normalization on Windows/MSYS.
+- Connector install notes: when the project is the vault, the connector
+  directory is excluded via `.git/info/exclude`, never the vault's own
+  `.gitignore`.
 - The provenance header is quoted verbatim and identically in
   TECHNICAL.md, SECURITY.md, and the reference connector.
 - Session recall is pinned at the 5 most recent sessions, and the v1
