@@ -55,8 +55,10 @@ closed.
 1. Verify the vault is its own git repository: `git -C <vault> rev-parse
    --show-toplevel` must resolve to `<vault>` itself. If it resolves to a
    parent or any other directory, stop and tell the user; never pull from
-   or push to a repository that is not the vault. Then `git -C <vault>
-   pull` (best-effort; report failure, continue with the local copy).
+   or push to a repository that is not the vault. On Windows/MSYS,
+   normalize path forms before comparing (`rev-parse` prints `G:/...`
+   while the shell may report `/g/...`). Then `git -C <vault>`
+   pull (best-effort; report failure, continue with the local copy).
 2. Read `VAULT.md`. Check `format_version` against your compatible range
    (`>=1.0.0 <2.0.0`). On a major mismatch, stop and tell the user a
    migration may be needed (see `docs/migrations/` in the Cohort repo).

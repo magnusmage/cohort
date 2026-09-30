@@ -107,6 +107,9 @@ Session start (load):
    parent repository the vault happens to sit inside), the connector
    refuses with a clear message; silently syncing a parent repo is a
    fail-open bug. Only then does it run `git pull` on the vault.
+   On Windows/MSYS, normalize path forms before comparing: `rev-parse`
+   prints `G:/...` while the shell may report `/g/...`, and a literal
+   string comparison false-refuses a valid vault.
 2. It reads `VAULT.md`, checks the format version, and aborts on a major version mismatch.
 3. It loads bounded context: `facts.md` + `pointers.md` + the 5 most recent session summaries + relevant decisions by tag or recency. Never the whole vault (context-window budget, P6).
 4. It injects the context under this exact provenance header (the reference
