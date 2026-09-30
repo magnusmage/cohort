@@ -55,8 +55,10 @@ closed.
 1. Verify the vault is its own git repository: `git -C <vault> rev-parse
    --show-toplevel` must resolve to `<vault>` itself. If it resolves to a
    parent or any other directory, stop and tell the user; never pull from
-   or push to a repository that is not the vault. Then `git -C <vault>
-   pull` (best-effort; report failure, continue with the local copy).
+   or push to a repository that is not the vault. On Windows/MSYS,
+   normalize path forms before comparing (`rev-parse` prints `G:/...`
+   while the shell may report `/g/...`). Then `git -C <vault>`
+   pull (best-effort; report failure, continue with the local copy).
 2. Read `VAULT.md`. Check `format_version` against your compatible range
    (`>=1.0.0 <2.0.0`). On a major mismatch, stop and tell the user a
    migration may be needed (see `docs/migrations/` in the Cohort repo).
@@ -91,8 +93,8 @@ When the user asks (`ask` mode) or at session end (`auto-draft` mode):
 3. On approval: write files per the vault schema (UTF-8 markdown, YAML
    frontmatter with `author`, `date`, `tags`; session files named
    `YYYY-MM-DD-<author>.md` under `sessions/YYYY/MM/`). `author` is the
-   approving human; add `proposed_by:` naming yourself as the drafting
-   assistant.
+   approving human; never name yourself or any tool anywhere in vault
+   content.
 4. Run the redaction scan (gitleaks with the vault's
    `security/redaction-rules.toml`). On any hit: stop, show the user exactly
    what matched, and refuse to commit until it is removed. Also fail closed
@@ -124,7 +126,10 @@ text. You never propose, stage, or commit files, in any mode.
 - **Kimi Code CLI** (primary): copy this folder to `.kimi-code/skills/cohort/`
   (project) or `~/.kimi-code/skills/cohort/` (user-wide), or to the shared
   `.agents/skills/cohort/` path. Invoke with `/skill:cohort`. The CLI's shell
-  access runs git, gitleaks, and the redaction scan.
+  access runs git, gitleaks, and the redaction scan. When the project is the
+  vault itself, exclude the connector directory via `.git/info/exclude`
+  (local-only, never committed). Never add client tool paths to the vault's
+  own `.gitignore`: that file is shared content and must stay client-neutral.
 - **Kimi Work desktop**: attach the vault folder as the workspace; the same
   instructions apply.
 - **Kimi Chat (web)**: cannot run this connector (no local disk, no git).

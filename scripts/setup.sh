@@ -30,7 +30,8 @@ VAULT_DIR=$REPLY
 if [ ! -d "$VAULT_DIR" ]; then
   mkdir -p "$VAULT_DIR"
 fi
-if [ -z "$(ls -A "$VAULT_DIR" 2>/dev/null)" ]; then
+# A directory holding only .git (a freshly cloned empty repo) counts as empty.
+if [ -z "$(ls -A "$VAULT_DIR" 2>/dev/null | grep -vxF '.git')" ]; then
   cp -R "$TEMPLATE_DIR"/. "$VAULT_DIR"/
   say "initialized $VAULT_DIR from vault-template"
 fi
@@ -60,8 +61,11 @@ git var GIT_AUTHOR_IDENT >/dev/null 2>&1 || NO_IDENT=1
 ask "Visibility: private or public (public enables stricter redaction + filename review)" "private"
 VIS=$REPLY
 case "$VIS" in private|public) ;; *) say "error: visibility must be 'private' or 'public'"; exit 1;; esac
-# Portable in-place edit of the visibility line in VAULT.md frontmatter.
-sed "s/^visibility:.*/visibility: $VIS/" VAULT.md > VAULT.md.tmp && mv VAULT.md.tmp VAULT.md
+# Portable in-place edit of the visibility line in VAULT.md frontmatter,
+# plus the body bullet, which otherwise keeps saying the old value.
+sed -e "s/^visibility:.*/visibility: $VIS/" \
+    -e "s/^- \*\*Visibility:\*\* [a-z]*/- **Visibility:** $VIS/" \
+    VAULT.md > VAULT.md.tmp && mv VAULT.md.tmp VAULT.md
 say "VAULT.md visibility set to: $VIS"
 
 # --- 4. The three consent choices (ADR-0004) -----------------------------
