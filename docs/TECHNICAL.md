@@ -90,7 +90,7 @@ vault/
 File format rules:
 
 - All files are UTF-8 markdown with YAML frontmatter (`author`, `date`, `tags`, `supersedes`).
-- `author` records the approving human, who is accountable for what enters team memory. An AI-drafted writeback may name its drafter in an optional `proposed_by:` frontmatter field, so provenance survives without blurring accountability.
+- `author` records the approving human, who is accountable for what enters team memory. Authorship is human-only: no AI or tool names in vault frontmatter, vault content, or git history.
 - Session logs are append-only. Git preserves history anyway.
 - Decisions are immutable once merged. Superseding a decision creates a new file with a `supersedes:` pointer; nothing is deleted.
 - `_archive/` is the only destination for removal. The vault never forgets, it only retires.

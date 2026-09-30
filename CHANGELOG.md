@@ -16,9 +16,9 @@ Hardening pass over the first round of dogfood findings.
 - `VAULT.md` manifest fields are pinned in the spec: `name`, and the
   optional `review_gated` boolean, which is the single documented signal
   that routes writebacks through pull requests.
-- Optional `proposed_by:` frontmatter field naming the drafting assistant
-  on AI-drafted, human-approved writebacks. `author:` remains the
-  approving human.
+- Writeback authorship is pinned as human-only: `author:` is the
+  approving human, and no AI or tool names appear in vault frontmatter,
+  vault content, or git history.
 
 ### Fixed
 

@@ -91,8 +91,8 @@ When the user asks (`ask` mode) or at session end (`auto-draft` mode):
 3. On approval: write files per the vault schema (UTF-8 markdown, YAML
    frontmatter with `author`, `date`, `tags`; session files named
    `YYYY-MM-DD-<author>.md` under `sessions/YYYY/MM/`). `author` is the
-   approving human; add `proposed_by:` naming yourself as the drafting
-   assistant.
+   approving human; never name yourself or any tool anywhere in vault
+   content.
 4. Run the redaction scan (gitleaks with the vault's
    `security/redaction-rules.toml`). On any hit: stop, show the user exactly
    what matched, and refuse to commit until it is removed. Also fail closed
