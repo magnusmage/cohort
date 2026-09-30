@@ -30,7 +30,8 @@ VAULT_DIR=$REPLY
 if [ ! -d "$VAULT_DIR" ]; then
   mkdir -p "$VAULT_DIR"
 fi
-if [ -z "$(ls -A "$VAULT_DIR" 2>/dev/null)" ]; then
+# A directory holding only .git (a freshly cloned empty repo) counts as empty.
+if [ -z "$(ls -A "$VAULT_DIR" 2>/dev/null | grep -vxF '.git')" ]; then
   cp -R "$TEMPLATE_DIR"/. "$VAULT_DIR"/
   say "initialized $VAULT_DIR from vault-template"
 fi
