@@ -124,7 +124,10 @@ text. You never propose, stage, or commit files, in any mode.
 - **Kimi Code CLI** (primary): copy this folder to `.kimi-code/skills/cohort/`
   (project) or `~/.kimi-code/skills/cohort/` (user-wide), or to the shared
   `.agents/skills/cohort/` path. Invoke with `/skill:cohort`. The CLI's shell
-  access runs git, gitleaks, and the redaction scan.
+  access runs git, gitleaks, and the redaction scan. When the project is the
+  vault itself, exclude the connector directory via `.git/info/exclude`
+  (local-only, never committed). Never add client tool paths to the vault's
+  own `.gitignore`: that file is shared content and must stay client-neutral.
 - **Kimi Work desktop**: attach the vault folder as the workspace; the same
   instructions apply.
 - **Kimi Chat (web)**: cannot run this connector (no local disk, no git).
