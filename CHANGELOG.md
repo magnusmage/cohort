@@ -5,7 +5,8 @@ project policy.
 
 ## [Unreleased]
 
-Hardening pass over the first round of dogfood findings.
+Hardening pass over the first round of dogfood findings, then a
+pre-release audit pass over every shipping surface.
 
 ### Added
 
@@ -19,9 +20,20 @@ Hardening pass over the first round of dogfood findings.
 - Writeback authorship is pinned as human-only: `author:` is the
   approving human, and no AI or tool names appear in vault frontmatter,
   vault content, or git history.
+- The validator requires the pinned `VAULT.md` manifest keys `name:` and
+  `members:` (TECHNICAL.md §4). Previously a vault missing them passed as
+  valid.
+- CI validates `vault-template/` against the schema, not only the example
+  vault; the wizard copies the template into every new vault.
 
 ### Fixed
 
+- The pre-commit redaction hook scans staged content (`gitleaks protect
+  --staged`). The previous `gitleaks git --pre-commit` scanned zero
+  commits in a fresh vault and let every commit through.
+- The setup wizard captures answers from REPLY instead of command
+  substitution, so prompt text no longer leaks into the saved config
+  values.
 - The setup wizard initializes vaults on the `main` branch
   (`git init -b main`, with a fallback for git older than 2.28),
   matching what the docs already promised.
@@ -32,6 +44,19 @@ Hardening pass over the first round of dogfood findings.
   just the frontmatter.
 - The example and template manifests used `vault:` for the vault name;
   the pinned key is `name:`.
+- The validator fails session files that are not named
+  `YYYY-MM-DD-<author>.md` under `sessions/YYYY/MM/`.
+- The validator and the wizard tolerate CRLF line endings in vault files;
+  on shells that read bytes verbatim, a CRLF vault false-failed the
+  frontmatter and visibility checks.
+- Re-running the wizard no longer overwrites a vault's customized
+  `security/redaction-rules.toml`; vault-local rules win.
+- The pre-commit hook refuses when the vault lacks its own
+  `security/redaction-rules.toml` instead of silently borrowing an
+  adjacent checkout's rules.
+- Connector spec: the missing `.cohort.local.toml` refusal (offer the
+  setup choices) and the `.vaultignore` pre-staging check are stated
+  explicitly.
 
 ### Changed
 
@@ -48,6 +73,11 @@ Hardening pass over the first round of dogfood findings.
   budget is post-v1 scope).
 - CONTRIBUTING.md records the shell pitfalls found while dogfooding
   (`check-ignore --no-index`, `$0` path derivation, piped exit codes).
+- SECURITY.md and LIMITATIONS.md name the prompt-injection control
+  accurately: connector load-time refusal of crafted content, not a
+  standalone scanner.
+- CI pins `actions/checkout` to a full-length commit SHA (SECURITY.md
+  T6).
 
 ## [0.1.0] - 2026-09-28
 
