@@ -167,8 +167,11 @@ connector (`connectors/kimi/SKILL.md`, "Bootstrap"):
    provisions the redaction rules, and installs the pre-commit hook.
    The connector asks the questions in conversation and feeds the
    answers to the wizard; it never reimplements the wizard's steps.
-6. Push and the collaborator reminder: adding teammates means adding
-   GitHub collaborators, and that is the entire sharing mechanism.
+6. Seed commit, push, and the collaborator reminder: a fresh repo has no
+   commits, so commit the seeded template first, then push. Adding
+   teammates means adding GitHub collaborators, and that is the entire
+   sharing mechanism. The user starts the next session with the vault as
+   the project directory so LOAD can find it.
 
 Every install answers three questions. Answers are stored locally in
 `<vault>/.cohort.local.toml` (gitignored, per-user, never shared):

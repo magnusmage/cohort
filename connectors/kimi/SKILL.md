@@ -92,7 +92,10 @@ steps.
    `git clone --depth 1 --branch <pinned tag> https://github.com/magnusmage/cohort.git <dir>`
 
    Verify the tag is annotated (`git rev-parse --verify "refs/tags/<tag>^{tag}"`).
-   Every script step below runs from that directory.
+   If the directory already exists from an earlier run, refresh it
+   instead of cloning into a non-empty directory: fetch and check out
+   the pinned tag again. Every script step below runs from that
+   directory.
 
 4. Template seed and consent. Drive `sh <dir>/scripts/setup.sh` against
    the vault directory the user chooses. The wizard copies the template,
@@ -102,10 +105,14 @@ steps.
    answers to the wizard. If the wizard refuses, report its message
    verbatim and stop.
 
-5. Push and collaborators. `git push -u origin main` against the new
-   remote, then remind the user: adding teammates means adding GitHub
-   collaborators, and that is the entire sharing mechanism. After the
-   push, proceed to LOAD above.
+5. Seed commit, push, and collaborators. A fresh repo has no commits, so
+   `git push` alone fails with "src refspec main does not match any".
+   Commit the seeded template first (for example `chore: init cohort
+   vault`), then `git push -u origin main` against the new remote.
+   Remind the user: adding teammates means adding GitHub collaborators,
+   and that is the entire sharing mechanism. Tell the user to start the
+   next Kimi Code CLI session with the vault as the project directory,
+   so LOAD can find the vault. After the push, proceed to LOAD above.
 
 ## Session start: LOAD
 
