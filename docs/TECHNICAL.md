@@ -141,8 +141,37 @@ standard (YAML frontmatter + markdown instructions). It must:
 | Declare platform | Frontmatter `metadata.platform`, `metadata.tested_versions` |
 | Consent-first activation | Do nothing unless the user invoked the connector or asked about shared team context. Never activate unprompted. |
 | Respect client config | Read `.cohort.local.toml` on every run; honor `activation_scope` and `writeback_mode`; refuse to run if the file is missing and offer the setup choices |
+| Bootstrap | On first invocation with no vault configured, walk the user through setup per §6a: disclaimer gate, auth, repo creation, then the setup wizard as the tested spine |
 
-### 6a. Client configuration (set once per install, asked by the setup wizard)
+### 6a. Bootstrap and client configuration
+
+On first invocation with no vault configured (for example the user says
+"set up my team vault"), the connector runs the bootstrap flow recorded
+in `docs/decisions/ADR-0016-bootstrap-mode.md` and specified in the
+connector (`connectors/kimi/SKILL.md`, "Bootstrap"):
+
+1. Disclaimer gate: a verbatim statement of what Cohort does with the
+   user's data and token, shown before anything runs. Continue only on
+   an explicit yes.
+2. GitHub auth: `gh auth login` with the OAuth browser flow by default;
+   a fine-grained PAT (Contents and Pull requests, one repository,
+   90-day expiry) as the fallback. The token goes to the machine's git
+   credential manager only, never into chat or a file; a token pasted
+   into chat hits the redaction rules and the flow refuses.
+3. Repo creation under the user's own account, visibility confirmed
+   with the user.
+4. Tooling fetch: clone the Cohort release at the pinned tag into a
+   local tooling directory and verify the tag is annotated.
+5. The setup wizard (`scripts/setup.sh`) as the tested spine: it copies
+   the template, asks visibility and the three consent questions below,
+   provisions the redaction rules, and installs the pre-commit hook.
+   The connector asks the questions in conversation and feeds the
+   answers to the wizard; it never reimplements the wizard's steps.
+6. Seed commit, push, and the collaborator reminder: a fresh repo has no
+   commits, so commit the seeded template first, then push. Adding
+   teammates means adding GitHub collaborators, and that is the entire
+   sharing mechanism. The user starts the next session with the vault as
+   the project directory so LOAD can find it.
 
 Every install answers three questions. Answers are stored locally in
 `<vault>/.cohort.local.toml` (gitignored, per-user, never shared):

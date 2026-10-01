@@ -25,6 +25,12 @@ pre-release audit pass over every shipping surface.
   valid.
 - CI validates `vault-template/` against the schema, not only the example
   vault; the wizard copies the template into every new vault.
+- Plug-and-play pack (ADR-0016): bootstrap mode in the Kimi connector
+  (verbatim disclaimer gate, GitHub auth walkthrough with OAuth default
+  and scoped-PAT fallback, repo creation, then the setup wizard driven
+  as the tested spine), `install.sh` (pinned tag, annotated-tag and
+  checksum verification, copies the skill to the user scope, runs
+  nothing else), and a two-path README with a daily-use table.
 
 ### Fixed
 
@@ -76,6 +82,11 @@ pre-release audit pass over every shipping surface.
 - SECURITY.md and LIMITATIONS.md name the prompt-injection control
   accurately: connector load-time refusal of crafted content, not a
   standalone scanner.
+- TECHNICAL.md §6a covers the bootstrap flow alongside the three consent
+  questions (ADR-0016); SECURITY.md §8 records the token-storage
+  commitment.
+- README: two paths (one-command install for everyone, manual path for
+  developers); schema internals moved to `docs/`, linked.
 - CI pins `actions/checkout` to a full-length commit SHA (SECURITY.md
   T6).
 

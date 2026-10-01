@@ -117,6 +117,11 @@ structurally incapable of the following:
    mandatory approval (TECHNICAL.md §6a).
 6. Files from a chat are never auto-shared. Writebacks are markdown only.
    Vault attachments are placed by humans via git, deliberately.
+7. GitHub tokens from the bootstrap auth walkthrough (TECHNICAL.md §6a)
+   go to the machine's git credential manager only: never into chat,
+   files, or the vault. A token pasted into chat matches the redaction
+   rules (SECURITY.md §3); the flow refuses and the token must be
+   rotated.
 
 Client preferences live in `<vault>/.cohort.local.toml`, which must be
 gitignored by every vault. A connector must refuse to run if it detects this
