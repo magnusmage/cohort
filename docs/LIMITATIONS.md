@@ -39,8 +39,9 @@ trade-off, and overturning any of them requires a spec change and review.
 - **Trust is collaborator-granular.** Everyone with repo access can read the
   whole vault. There is no per-topic access control.
 - **A compromised collaborator account can inject crafted content.** The
-  provenance header and injection-pattern scan reduce the blast radius, but
-  the trust model assumes collaborators are who they say they are.
+  provenance header and the connector's load-time refusal of crafted
+  content reduce the blast radius, but the trust model assumes
+  collaborators are who they say they are.
 
 ## Scope limits
 

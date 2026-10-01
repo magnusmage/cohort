@@ -14,7 +14,7 @@ prompt-injection vector, not just bad data.
 | # | Threat | Vector | Impact | Control |
 |---|---|---|---|---|
 | T1 | Secrets in vault | User paste accident; an AI writes an API key it saw | Credential compromise, public repo leak | Redaction rules (§3), `.vaultignore`, pre-commit scan, fail-closed commit gate |
-| T2 | Prompt injection via vault | A malicious collaborator (or a compromised account) commits crafted markdown that instructs AIs to exfiltrate data | Data theft across all teammates' sessions | Trust model (§4), injection-pattern scan, provenance header telling the AI vault content is data, not instructions |
+| T2 | Prompt injection via vault | A malicious collaborator (or a compromised account) commits crafted markdown that instructs AIs to exfiltrate data | Data theft across all teammates' sessions | Trust model (§4), connector load-time refusal of crafted content (SKILL.md LOAD), provenance header telling the AI vault content is data, not instructions |
 | T3 | Poisoned writeback | An AI proposes false or junk "facts" that get merged | Corrupted team memory, wrong decisions | Mandatory human review; decisions carry author and rationale; supersede, never delete |
 | T4 | Public repo exposure | A vault repo set to public containing internal context | Confidential context indexed by search engines | Setup wizard forces an explicit visibility choice; redaction scan runs on push; stricter rules for public vaults |
 | T5 | Malicious connector | A third-party connector with harmful instructions | Arbitrary harm within a chatbot session | Connector review checklist; connectors are plain markdown and auditable; pin and test documented versions |
