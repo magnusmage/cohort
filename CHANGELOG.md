@@ -5,8 +5,11 @@ project policy.
 
 ## [Unreleased]
 
-Hardening pass over the first round of dogfood findings, then a
-pre-release audit pass over every shipping surface.
+## [0.2.0] - 2026-10-02
+
+Pre-release audit pass over every shipping surface, then the
+plug-and-play pack: bootstrap setup, the pinned-tag installer, and the
+two-path README.
 
 ### Added
 
