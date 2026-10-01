@@ -90,30 +90,42 @@ vault_visibility = "$VIS"   # informational copy; VAULT.md is authoritative
 EOF
 
 # Ensure it is gitignored (fail-closed check lives in the connector).
-grep -qxF '.cohort.local.toml' .gitignore 2>/dev/null || echo '.cohort.local.toml' >> .gitignore
+tr -d '\r' < .gitignore 2>/dev/null | grep -qxF '.cohort.local.toml' \
+  || echo '.cohort.local.toml' >> .gitignore
 say "wrote .cohort.local.toml (gitignored)"
 
 # --- 5. Pre-commit redaction hook ----------------------------------------
-# The rules live in the vault, versioned with it (SECURITY.md section 3).
-# Provision them from this Cohort checkout; fail closed if the source is gone.
-[ -f "$RULES_SRC" ] || { say "error: redaction rules not found at $RULES_SRC"; say "error: cannot provision the vault without them (fail closed)."; exit 1; }
-mkdir -p security
-cp "$RULES_SRC" security/redaction-rules.toml
-say "provisioned security/redaction-rules.toml"
+# The rules live in the vault, versioned with it (SECURITY.md section 3),
+# and a team may relax or extend its own copy. Provision from this Cohort
+# checkout only when the vault has none; never clobber vault-local rules.
+if [ -f security/redaction-rules.toml ]; then
+  say "kept existing security/redaction-rules.toml (vault-local rules win)"
+else
+  [ -f "$RULES_SRC" ] || { say "error: redaction rules not found at $RULES_SRC"; say "error: cannot provision the vault without them (fail closed)."; exit 1; }
+  mkdir -p security
+  cp "$RULES_SRC" security/redaction-rules.toml
+  say "provisioned security/redaction-rules.toml"
+fi
 
 HOOK=.git/hooks/pre-commit
 cat > "$HOOK" <<'EOF'
 #!/usr/bin/env sh
 # Cohort redaction gate: fails the commit closed on any scan hit (SECURITY.md §3).
+# The rules are part of the vault (TECHNICAL.md §4). There is deliberately no
+# fallback to an adjacent checkout: a vault without its own rules file refuses
+# rather than borrowing rules that are not its team's.
 RULES="$(git rev-parse --show-toplevel)/security/redaction-rules.toml"
-[ -f "$RULES" ] || RULES="$(git rev-parse --show-toplevel)/../security/redaction-rules.toml"
-if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks protect --staged --config "$RULES" --verbose
-else
+if ! command -v gitleaks >/dev/null 2>&1; then
   echo "cohort: gitleaks not found; install it (https://github.com/gitleaks/gitleaks)" >&2
   echo "cohort: refusing to commit without the redaction scan (fail closed)." >&2
   exit 1
 fi
+if [ ! -f "$RULES" ]; then
+  echo "cohort: security/redaction-rules.toml missing from the vault" >&2
+  echo "cohort: refusing to commit without the vault's redaction rules (fail closed)." >&2
+  exit 1
+fi
+gitleaks protect --staged --config "$RULES" --verbose
 EOF
 chmod +x "$HOOK"
 if command -v gitleaks >/dev/null 2>&1; then

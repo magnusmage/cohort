@@ -19,7 +19,8 @@ jobs:
     name: Redaction scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to the v4.2.2 commit SHA (supply chain, SECURITY.md T6).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
       - name: Install gitleaks (pinned and checksum-verified)
@@ -39,6 +40,9 @@ jobs:
     name: Validate vault schema
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Validate example vault against the v1 schema
-        run: sh scripts/validate-vault.sh example-vault
+      # Pinned to the v4.2.2 commit SHA (supply chain, SECURITY.md T6).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate example vault and template against the v1 schema
+        run: |
+          sh scripts/validate-vault.sh example-vault
+          sh scripts/validate-vault.sh vault-template
