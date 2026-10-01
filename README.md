@@ -2,9 +2,6 @@
 
 > Shared context for AI chatbots. One markdown vault on GitHub. Every teammate's AI, regardless of account, plan, or platform, reads and writes the same memory.
 
-![License](docs/badge-license.svg)
-![Status](docs/badge-status.svg)
-
 ![Cohort architecture: teammates' AI clients load bounded context from the shared vault repo, and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request. No servers exist.](docs/architecture.svg)
 
 ---
@@ -12,6 +9,21 @@
 ## What it is
 
 Cohort gives a team shared memory for their AI chatbots. One git repository holds the team's facts, decisions, and open threads in plain markdown. Each teammate's AI reads a bounded slice at session start and proposes updates at session end, and a human approves every change before it lands. There are no servers and no accounts with us: the repo is the product, and it lives in your GitHub.
+
+## Current status (v0.2.0, October 2026)
+
+Works today:
+
+- One-command install and a conversational setup (the skill walks you through GitHub sign-in, vault creation, and consent choices).
+- Team memory load at session start and human-approved writebacks at session end, through review-gated pull requests.
+- Local secret scanning that blocks API keys, tokens, and private data before every commit.
+- Kimi connector (Kimi Code CLI and Kimi Work desktop).
+
+Not yet:
+
+- Connectors for Claude and GPT (the vault format is client-neutral; only Kimi ships today).
+- Google Drive as a storage option (planned after the testing gate; git/GitHub is the only transport for now).
+- A public launch announcement. The project is in a two-week real-use testing period; the announcement waits for that to finish.
 
 ## How to start
 
