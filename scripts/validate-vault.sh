@@ -38,11 +38,16 @@ fi
 tr -d '\r' < "$VAULT/.gitignore" 2>/dev/null | grep -qxF '.cohort.local.toml' \
   || err ".gitignore must ignore .cohort.local.toml"
 
-# 3. VAULT.md frontmatter: format_version and visibility
+# 3. VAULT.md frontmatter: format_version and visibility, plus the required
+# manifest keys pinned in TECHNICAL.md §4 (name:, members:)
 head -20 "$VAULT/VAULT.md" 2>/dev/null | grep -q '^format_version: "1\.' \
   || err "VAULT.md must declare format_version \"1.x\" in frontmatter"
 VIS=$(head -20 "$VAULT/VAULT.md" 2>/dev/null | sed -n 's/^visibility: *//p' | tr -d '\r')
 case "$VIS" in private|public) ;; *) err "VAULT.md visibility must be private or public";; esac
+tr -d '\r' < "$VAULT/VAULT.md" 2>/dev/null | head -20 | grep -q '^name:' \
+  || err "VAULT.md must declare name: in frontmatter (pinned key, TECHNICAL.md §4)"
+tr -d '\r' < "$VAULT/VAULT.md" 2>/dev/null | head -20 | grep -q '^members:' \
+  || err "VAULT.md must declare members: in frontmatter (TECHNICAL.md §4)"
 
 # 4. Markdown files need frontmatter with author and date
 check_frontmatter() {
