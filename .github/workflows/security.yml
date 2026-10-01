@@ -46,3 +46,12 @@ jobs:
         run: |
           sh scripts/validate-vault.sh example-vault
           sh scripts/validate-vault.sh vault-template
+
+  installer:
+    name: Installer syntax check
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to the v4.2.2 commit SHA (supply chain, SECURITY.md T6).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Syntax-check install.sh
+        run: sh -n install.sh
