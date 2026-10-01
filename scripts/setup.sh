@@ -111,15 +111,21 @@ HOOK=.git/hooks/pre-commit
 cat > "$HOOK" <<'EOF'
 #!/usr/bin/env sh
 # Cohort redaction gate: fails the commit closed on any scan hit (SECURITY.md §3).
+# The rules are part of the vault (TECHNICAL.md §4). There is deliberately no
+# fallback to an adjacent checkout: a vault without its own rules file refuses
+# rather than borrowing rules that are not its team's.
 RULES="$(git rev-parse --show-toplevel)/security/redaction-rules.toml"
-[ -f "$RULES" ] || RULES="$(git rev-parse --show-toplevel)/../security/redaction-rules.toml"
-if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks protect --staged --config "$RULES" --verbose
-else
+if ! command -v gitleaks >/dev/null 2>&1; then
   echo "cohort: gitleaks not found; install it (https://github.com/gitleaks/gitleaks)" >&2
   echo "cohort: refusing to commit without the redaction scan (fail closed)." >&2
   exit 1
 fi
+if [ ! -f "$RULES" ]; then
+  echo "cohort: security/redaction-rules.toml missing from the vault" >&2
+  echo "cohort: refusing to commit without the vault's redaction rules (fail closed)." >&2
+  exit 1
+fi
+gitleaks protect --staged --config "$RULES" --verbose
 EOF
 chmod +x "$HOOK"
 if command -v gitleaks >/dev/null 2>&1; then
