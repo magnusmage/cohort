@@ -46,9 +46,9 @@ The wizard also initializes or copies the vault from `vault-template/`, asks
 visibility (`private|public`, written into `VAULT.md`), and installs the
 pre-commit redaction hook (gitleaks).
 
-Refuse to run, and explain why, if `.cohort.local.toml` is tracked in git,
-the vault path is not set, or `VAULT.md` is missing or malformed. Fail
-closed.
+Refuse to run, and explain why, if `.cohort.local.toml` is tracked in
+git or is missing (offer to run the setup choices), the vault path is
+not set, or `VAULT.md` is missing or malformed. Fail closed.
 
 ## Session start: LOAD
 
@@ -98,7 +98,9 @@ When the user asks (`ask` mode) or at session end (`auto-draft` mode):
 4. Run the redaction scan (gitleaks with the vault's
    `security/redaction-rules.toml`). On any hit: stop, show the user exactly
    what matched, and refuse to commit until it is removed. Also fail closed
-   on `.vaultignore` matches.
+   on `.vaultignore` matches: before staging, check every proposed file
+   against `.vaultignore` patterns, and drop any match from the proposal,
+   telling the user why.
 5. Read `review_gated` from `VAULT.md`. If `true`: never commit writebacks
    to the vault's main branch; push a branch and open a PR (`gh pr create`)
    for another human to approve. Otherwise commit with Conventional Commits
