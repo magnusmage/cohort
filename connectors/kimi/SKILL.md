@@ -4,7 +4,7 @@ description: Load shared team context from a Cohort vault (a git repository of m
 metadata:
   platform: kimi
   tested_versions: ["Kimi Code CLI >= 1.0"]
-  spec_version: "0.1.0"
+  spec_version: "0.2.0"
   vault_format: ">=1.0.0 <2.0.0"
 ---
 
@@ -49,6 +49,63 @@ pre-commit redaction hook (gitleaks).
 Refuse to run, and explain why, if `.cohort.local.toml` is tracked in
 git or is missing (offer to run the setup choices), the vault path is
 not set, or `VAULT.md` is missing or malformed. Fail closed.
+
+## Bootstrap: first run with no vault configured
+
+When the user asks to set up a team vault (for example "set up my team
+vault") and no vault is configured, walk through setup in conversation,
+in this order. `scripts/setup.sh` stays the tested spine: fetch the
+release at the pinned tag and drive the wizard; do not reimplement its
+steps.
+
+0. Disclaimer gate, before anything runs. Show this text verbatim and
+   continue only on an explicit yes:
+
+   > Before we start, here is exactly what Cohort does:
+   > It reads your team's shared vault files into this chat, so your AI has team context.
+   > It contacts only your own vault's git remote. Nothing else: no telemetry, no analytics, no third-party servers.
+   > The Cohort project runs no servers and keeps no copy of your data. Your data lives in your repo, owned by you.
+   > A local scan blocks secrets (API keys, tokens, private data) from ever being committed.
+   > Nothing is written without your explicit approval.
+   > Your GitHub token is stored only in your computer's credential manager, never in files or chat.
+   > Continue?
+
+1. GitHub auth. Check `gh auth status`. If the GitHub CLI is missing,
+   tell the user to install it first. Default: `gh auth login` with the
+   OAuth browser flow. Fallback: a fine-grained PAT limited to Contents
+   and Pull requests, one repository, 90-day expiry. The token goes to
+   the machine's git credential manager only: the user pipes it into
+   `gh auth login --with-token` at their own terminal. Never paste a
+   token into this chat. If a token appears in chat anyway, stop: it
+   matches the redaction rules, this flow refuses to continue, and the
+   user must rotate that token.
+
+2. Repo creation. The user owns the repo. Offer
+   `gh repo create <name> --private` (confirm the visibility choice with
+   the user) under the user's own account. Never create a repo for the
+   user under any other account, and never pick the collaborator list
+   for them.
+
+3. Tooling. Clone the Cohort release at the pinned tag into a local
+   tooling directory (default `~/.kimi-code/cohort`):
+
+   `git clone --depth 1 --branch <pinned tag> https://github.com/magnusmage/cohort.git <dir>`
+
+   Verify the tag is annotated (`git rev-parse --verify "refs/tags/<tag>^{tag}"`).
+   Every script step below runs from that directory.
+
+4. Template seed and consent. Drive `sh <dir>/scripts/setup.sh` against
+   the vault directory the user chooses. The wizard copies the template,
+   asks the visibility choice and the three consent questions (§6a),
+   provisions `security/redaction-rules.toml`, and installs the
+   pre-commit hook. Ask the questions in conversation, then feed the
+   answers to the wizard. If the wizard refuses, report its message
+   verbatim and stop.
+
+5. Push and collaborators. `git push -u origin main` against the new
+   remote, then remind the user: adding teammates means adding GitHub
+   collaborators, and that is the entire sharing mechanism. After the
+   push, proceed to LOAD above.
 
 ## Session start: LOAD
 
@@ -125,7 +182,12 @@ text. You never propose, stage, or commit files, in any mode.
 
 ## Install notes (Kimi)
 
-- **Kimi Code CLI** (primary): copy this folder to `.kimi-code/skills/cohort/`
+- **One command (default)**: `curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh`
+  copies this skill to `~/.kimi-code/skills/cohort/`. Prefer to read it
+  first? Download `install.sh`, read it, then run it: same result, and it
+  runs nothing else. The installer pins the release tag and verifies the
+  skill's checksum before copying.
+- **Kimi Code CLI** (manual): copy this folder to `.kimi-code/skills/cohort/`
   (project) or `~/.kimi-code/skills/cohort/` (user-wide), or to the shared
   `.agents/skills/cohort/` path. Invoke with `/skill:cohort`. The CLI's shell
   access runs git, gitleaks, and the redaction scan. When the project is the
