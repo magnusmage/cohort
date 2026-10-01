@@ -90,7 +90,8 @@ vault_visibility = "$VIS"   # informational copy; VAULT.md is authoritative
 EOF
 
 # Ensure it is gitignored (fail-closed check lives in the connector).
-grep -qxF '.cohort.local.toml' .gitignore 2>/dev/null || echo '.cohort.local.toml' >> .gitignore
+tr -d '\r' < .gitignore 2>/dev/null | grep -qxF '.cohort.local.toml' \
+  || echo '.cohort.local.toml' >> .gitignore
 say "wrote .cohort.local.toml (gitignored)"
 
 # --- 5. Pre-commit redaction hook ----------------------------------------

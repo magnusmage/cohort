@@ -33,19 +33,21 @@ if [ -f "$VAULT/.cohort.local.toml" ]; then
     ok ".cohort.local.toml present, ignored, and untracked"
   fi
 fi
-grep -qxF '.cohort.local.toml' "$VAULT/.gitignore" 2>/dev/null \
+# tr -d '\r': vaults committed with CRLF endings must not false-FAIL the
+# exact matches below on shells that read bytes verbatim (Linux, macOS).
+tr -d '\r' < "$VAULT/.gitignore" 2>/dev/null | grep -qxF '.cohort.local.toml' \
   || err ".gitignore must ignore .cohort.local.toml"
 
 # 3. VAULT.md frontmatter: format_version and visibility
 head -20 "$VAULT/VAULT.md" 2>/dev/null | grep -q '^format_version: "1\.' \
   || err "VAULT.md must declare format_version \"1.x\" in frontmatter"
-VIS=$(head -20 "$VAULT/VAULT.md" 2>/dev/null | sed -n 's/^visibility: *//p')
+VIS=$(head -20 "$VAULT/VAULT.md" 2>/dev/null | sed -n 's/^visibility: *//p' | tr -d '\r')
 case "$VIS" in private|public) ;; *) err "VAULT.md visibility must be private or public";; esac
 
 # 4. Markdown files need frontmatter with author and date
 check_frontmatter() {
   f="$1"
-  first=$(head -1 "$f")
+  first=$(head -1 "$f" | tr -d '\r')
   [ "$first" = "---" ] || { err "$f: no YAML frontmatter"; return; }
   head -10 "$f" | grep -q '^author:' || err "$f: frontmatter missing 'author'"
   head -10 "$f" | grep -q '^date:' || err "$f: frontmatter missing 'date'"
