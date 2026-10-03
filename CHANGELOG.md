@@ -34,6 +34,11 @@ two-path README.
   as the tested spine), `install.sh` (pinned tag, annotated-tag and
   checksum verification, copies the skill to the user scope, runs
   nothing else), and a two-path README with a daily-use table.
+- Bootstrap repo choice: the connector can create the repo, or attach to
+  an empty repo the user created in the browser. A pasted link is
+  validated before anything runs (github.com host, push access for the
+  authenticated user, contents empty or template-only) and refused with
+  a plain reason on any failure.
 
 ### Fixed
 
