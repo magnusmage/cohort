@@ -159,7 +159,12 @@ connector (`connectors/kimi/SKILL.md`, "Bootstrap"):
    credential manager only, never into chat or a file; a token pasted
    into chat hits the redaction rules and the flow refuses.
 3. Repo creation under the user's own account, visibility confirmed
-   with the user.
+   with the user. Default: the connector creates it (`gh repo create`).
+   Alternative: the user pastes a link to an empty repo they created in
+   the browser; the connector validates before anything else (github.com
+   host, push access for the authenticated user, and contents either
+   empty or only the Cohort template) and refuses with a plain reason on
+   any failure. Then clone and continue.
 4. Tooling fetch: clone the Cohort release at the pinned tag into a
    local tooling directory and verify the tag is annotated.
 5. The setup wizard (`scripts/setup.sh`) as the tested spine: it copies
