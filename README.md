@@ -27,27 +27,58 @@ Not yet:
 
 ## How to start
 
+### Which Kimi is this for?
+
+Cohort runs inside a Kimi product that can access your disk and git.
+
+| Product | Works with Cohort? |
+|---|---|
+| Kimi Code CLI (the terminal coding tool) | Yes, full setup and daily use. This guide assumes this one. |
+| Kimi Work desktop | Yes. Attach your vault folder as the workspace, then follow the same steps. |
+| Kimi Chat (web or app) | No. It cannot access your disk or git, so install commands will not run there. A teammate can export vault files and add them to a Kimi Chat Project as read-only reference, with no sync back. |
+
+If you are reading this in Kimi Chat and want the real thing, install Kimi Code CLI first, then start from the top.
+
 ### Everyone
 
-Install the connector (verifies the pinned release tag, then copies the skill into place):
+What you need before you begin: a GitHub account (free), Kimi Code CLI installed, and about five minutes. Nothing else. No Cohort account exists and none is needed.
+
+**Step 1. Open a terminal.**
+
+- Windows: open the terminal inside Kimi Code CLI, or open Git Bash (it installs with Git).
+- Mac: open the Terminal app (press Cmd+Space, type Terminal).
+- Linux: open your terminal app.
+
+**Step 2. Paste this one line and press Enter:**
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh
 ```
 
-Prefer to read installer scripts first? Download it, read it, run it. Same result:
+The installer checks that the file matches the official v0.2.0 release exactly, then copies the skill onto your machine. When it finishes you will see:
 
-```sh
-curl -fsSLO https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh
-less install.sh
-sh install.sh
+```
+installed cohort skill to <your home>/.kimi-code/skills/cohort
+next: start Kimi Code CLI and run /skill:cohort, then say "set up my team vault"
 ```
 
-Then start Kimi Code CLI, run `/skill:cohort`, and say "set up my team
-vault". The connector states exactly what it does with your data,
-waits for your yes, and walks you through GitHub auth, creating your
-vault repo, and three consent choices. Nothing is written without your
-approval at each step.
+Prefer to read installer scripts first? Run `curl -fsSLO .../install.sh`, read the file, then `sh install.sh`. Same result.
+
+If Step 2 fails: on Windows the usual cause is no curl or no sh outside Kimi Code CLI, so use the terminal inside Kimi Code CLI. Otherwise copy the full error message into your Kimi chat and ask what to do. Do not retry blindly.
+
+**Step 3 (optional, ten seconds). Check it landed:**
+
+```sh
+ls ~/.kimi-code/skills/cohort
+```
+
+Files listed means the skill is installed for your user, so every project on this machine can use it (this is "user scope"). To install for one project only, use the Developers path below.
+
+**Step 4. Start Kimi Code CLI in any project folder.** In the chat input, not the terminal, type `/skill:cohort` and send the message "set up my team vault".
+
+**Step 5. Answer the connector's questions in chat.** It first tells you exactly what it does with your data and waits for your yes. Then it walks you through GitHub sign-in (a browser window, preferred; a fine-grained token only if the browser flow cannot run) and creating your vault repo. You can let the connector create the repo, or create an empty private repo yourself at github.com/new (no README, no license) and paste its link. Then it asks three consent choices, each explained in one sentence before you decide: when it loads context, when it proposes updates, and what content it reads. Every step waits for you.
+
+When it finishes, it tells you to start your next session with the vault folder as the project directory. That folder is your team's memory from then on.
 
 ### Developers
 
