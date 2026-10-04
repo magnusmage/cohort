@@ -11,6 +11,13 @@ Everything happens in your own GitHub account. Cohort never sees your vault.
 | Kimi Work desktop | Yes | Attach the vault folder as the workspace; the same instructions apply. |
 | Kimi Chat (web) | No | No local disk or git. A teammate can export vault files into a Kimi Chat Project as read-only reference; nothing syncs back, and the install commands will not run there. |
 
+**How you start it:**
+
+| Product | How you start the Cohort skill |
+|---|---|
+| Kimi Code CLI | Type `/skill:cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
+| Kimi Work desktop | Type `/` in the chat input and pick Cohort from the Skills menu, or describe the task in plain language and Kimi Agent triggers it. |
+
 ## What you need
 
 - git, and a GitHub account
