@@ -1,6 +1,7 @@
 ---
 name: cohort
 description: Load shared team context from a Cohort vault (a git repository of markdown) at session start, and propose human-approved writebacks at session end. Use when the user asks about shared team context, the team vault, or asks to sync or propose team memory.
+whenToUse: When the user says "set up my team vault", "load team context", "sync team memory", "propose a writeback", or asks about the team vault, shared team context, or team decisions
 metadata:
   platform: kimi
   tested_versions: ["Kimi Code CLI >= 1.0"]
@@ -23,8 +24,11 @@ chat; you exist only inside this session.
 
 Do nothing unless one of these is true:
 
-1. The user explicitly invoked you (`/skill:cohort`), or
-2. The user asked about shared team context or the team vault, or
+1. The user explicitly invoked you: typed `/skill:cohort` in Kimi Code
+   CLI, or picked Cohort from the `/` Skills menu in Kimi Work desktop.
+2. The user asked in plain language ("set up my team vault", "load team
+   context", "sync team memory", or similar) and the client matched your
+   `description` or `whenToUse` and loaded you.
 3. Client config allows it: `activation_scope: project` (auto-load) or
    `writeback_mode: auto-draft` (session-end draft). Even then, never commit
    anything without the user's explicit approval in this session.
@@ -201,20 +205,32 @@ text. You never propose, stage, or commit files, in any mode.
 
 ## Install notes (Kimi)
 
-- **One command (default)**: `curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh`
-  copies this skill to `~/.kimi-code/skills/cohort/`. Prefer to read it
-  first? Download `install.sh`, read it, then run it: same result, and it
-  runs nothing else. The installer pins the release tag and verifies the
-  skill's checksum before copying.
-- **Kimi Code CLI** (manual): copy this folder to `.kimi-code/skills/cohort/`
-  (project) or `~/.kimi-code/skills/cohort/` (user-wide), or to the shared
-  `.agents/skills/cohort/` path. Invoke with `/skill:cohort`. The CLI's shell
-  access runs git, gitleaks, and the redaction scan. When the project is the
-  vault itself, exclude the connector directory via `.git/info/exclude`
-  (local-only, never committed). Never add client tool paths to the vault's
-  own `.gitignore`: that file is shared content and must stay client-neutral.
-- **Kimi Work desktop**: attach the vault folder as the workspace; the same
-  instructions apply.
-- **Kimi Chat (web)**: cannot run this connector (no local disk, no git).
-  Consume-only path: a teammate exports vault files and adds them to a Kimi
-  Chat Project as reference files. Do not pretend two-way sync works there.
+How you start the skill differs per product; verified against the Kimi
+Code CLI docs and the Kimi Help Center on 2026-10-04.
+
+- **Kimi Code CLI** (primary): the one-command installer
+  (`curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh`)
+  copies this skill to `~/.kimi-code/skills/cohort/`; prefer to read it
+  first? Download `install.sh`, read it, then run it: same result, and
+  it runs nothing else. Manual alternative: copy this folder to
+  `.kimi-code/skills/cohort/` (project) or `~/.kimi-code/skills/cohort/`
+  (user-wide), or to the shared `~/.agents/skills/cohort/` path. Start
+  it by typing `/skill:cohort` in the chat input, or just ask in plain
+  language and the model invokes it from your `description` and
+  `whenToUse`. When the project is the vault itself, exclude the
+  connector directory via `.git/info/exclude` (local-only, never
+  committed). Never add client tool paths to the vault's own
+  `.gitignore`: that file is shared content and must stay
+  client-neutral.
+- **Kimi Work desktop**: attach the vault folder as the workspace.
+  Start the skill by typing `/` in the chat input and picking Cohort
+  from the Skills menu, or describe the task in plain language and Kimi
+  Agent triggers it. If Cohort is not listed, create it as a custom
+  skill in the app: start a `/skill-creator` conversation or describe
+  the workflow, and paste this SKILL.md as the skill content. The
+  folder-copy path above is documented for Kimi Code CLI; it is not
+  officially documented for the desktop app.
+- **Kimi Chat (web)**: cannot run this connector (no local disk, no
+  git). Consume-only path: a teammate exports vault files and adds them
+  to a Kimi Chat Project as reference files. Do not pretend two-way sync
+  works there.

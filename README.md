@@ -39,6 +39,13 @@ Cohort runs inside a Kimi product that can access your disk and git.
 
 If you are reading this in Kimi Chat and want the real thing, install Kimi Code CLI first, then start from the top.
 
+**How you start it:**
+
+| Product | How you start the Cohort skill |
+|---|---|
+| Kimi Code CLI | Type `/skill:cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
+| Kimi Work desktop | Type `/` in the chat input and pick Cohort from the Skills menu, or describe the task in plain language and Kimi Agent triggers it. |
+
 ### Everyone
 
 What you need before you begin: a GitHub account (free), Kimi Code CLI installed, and about five minutes. Nothing else. No Cohort account exists and none is needed.
@@ -93,7 +100,7 @@ gh auth login                                        # GitHub auth for repo crea
 
 | You want | You do |
 |---|---|
-| Team context at session start | Run `/skill:cohort` (or let it auto-load when you chose project scope) |
+| Team context at session start | Type `/skill:cohort` in Kimi Code CLI, pick Cohort from the `/` menu in Kimi Work desktop, or ask "load team context" (with project scope chosen at setup it auto-loads) |
 | Save a decision, fact, or open thread | Ask the connector to propose a writeback; edit and approve the draft |
 | Add a teammate | Add them as a GitHub collaborator on the vault repo. That is the entire sharing mechanism |
 

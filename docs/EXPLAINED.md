@@ -25,7 +25,7 @@ human saying yes, and no AI or tool name ever appears in the vault.
 | `sh scripts/validate-vault.sh <dir>` | Checks a vault against the v1 schema: required files, manifest keys, frontmatter, session naming, local config discipline. Exit 0 means valid. | Anytime, before pushing |
 | `gh auth login` | Authenticates the GitHub CLI with the OAuth browser flow. A fine-grained PAT is the fallback; the token goes to the credential manager only. | Once per machine |
 | `gitleaks protect --staged` | The redaction gate. Scans staged files against the vault's rules and refuses the commit on any hit. Normally runs inside the pre-commit hook. | Every commit, automatically |
-| `/skill:cohort` | Invokes the connector in Kimi Code CLI: load context, or propose a writeback. | Daily |
+| `/skill:cohort` (Kimi Code CLI) or the Cohort entry in the `/` Skills menu (Kimi Work desktop) | Invokes the connector: load context, or propose a writeback. Plain language ("load team context") also triggers it. | Daily |
 
 ## The consent choices
 
