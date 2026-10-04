@@ -4,7 +4,7 @@ description: Load shared team context from a Cohort vault (a git repository of m
 metadata:
   platform: kimi
   tested_versions: ["Kimi Code CLI >= 1.0"]
-  spec_version: "0.2.0"
+  spec_version: "0.3.0"
   vault_format: ">=1.0.0 <2.0.0"
 ---
 
@@ -80,11 +80,23 @@ steps.
    matches the redaction rules, this flow refuses to continue, and the
    user must rotate that token.
 
-2. Repo creation. The user owns the repo. Offer
-   `gh repo create <name> --private` (confirm the visibility choice with
-   the user) under the user's own account. Never create a repo for the
-   user under any other account, and never pick the collaborator list
-   for them.
+2. Repo creation. Ask in chat: "I can create the repo for you, or paste
+   a link to an empty repo you created on GitHub." The default is
+   connector-created: `gh repo create <name> --private` (confirm the
+   visibility choice with the user) under the user's own account. Never
+   create a repo under any other account, and never pick the
+   collaborator list for them.
+
+   Link path. If the user pastes a link, validate it before anything
+   else and refuse with a plain reason on any failure:
+   - Host: the URL must be a github.com repository.
+   - Access: `gh api repos/<owner>/<repo> --jq '.permissions.push'`
+     must be true for the authenticated user.
+   - Contents: `git ls-remote <url>` shows no refs (empty), or the
+     clone passes `scripts/validate-vault.sh` (it holds only the
+     Cohort template). Anything else refuses: "that repo is not empty."
+   On a valid link, clone it and continue with the wizard exactly as
+   the connector-created path.
 
 3. Tooling. Clone the Cohort release at the pinned tag into a local
    tooling directory (default `~/.kimi-code/cohort`):
