@@ -3,6 +3,14 @@
 This walks one person through creating a vault, then adding a teammate.
 Everything happens in your own GitHub account. Cohort never sees your vault.
 
+## Which Kimi is this for?
+
+| Kimi product | Connector runs? | Notes |
+|---|---|---|
+| Kimi Code CLI | Yes | The primary target. Install the skill, invoke with `/skill:cohort`. |
+| Kimi Work desktop | Yes | Attach the vault folder as the workspace; the same instructions apply. |
+| Kimi Chat (web) | No | No local disk or git. A teammate can export vault files into a Kimi Chat Project as read-only reference; nothing syncs back, and the install commands will not run there. |
+
 ## What you need
 
 - git, and a GitHub account
