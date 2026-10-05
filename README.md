@@ -59,10 +59,10 @@ What you need before you begin: a GitHub account (free), Kimi Code CLI installed
 **Step 2. Paste this one line and press Enter:**
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.3.0/install.sh | sh
 ```
 
-The installer checks that the file matches the official v0.2.0 release exactly, then copies the skill onto your machine. When it finishes you will see:
+The installer checks that the file matches the official v0.3.0 release exactly, then copies the skill onto your machine. When it finishes you will see:
 
 ```
 installed cohort skill to <your home>/.kimi-code/skills/cohort
@@ -70,6 +70,8 @@ next: start Kimi Code CLI and run /skill:cohort, then say "set up my team vault"
 ```
 
 Prefer to read installer scripts first? Run `curl -fsSLO .../install.sh`, read the file, then `sh install.sh`. Same result.
+
+No `curl` or `sh` available? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and copy `SKILL.md` into `~/.kimi-code/skills/cohort/`. Download the skill zip under Assets, not Source code; only the skill zip has SKILL.md at its root.
 
 If Step 2 fails: on Windows the usual cause is no curl or no sh outside Kimi Code CLI, so use the terminal inside Kimi Code CLI. Otherwise copy the full error message into your Kimi chat and ask what to do. Do not retry blindly.
 
