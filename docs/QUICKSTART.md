@@ -62,6 +62,8 @@ mkdir -p .agents/skills
 cp -R ../cohort/connectors/kimi .agents/skills/cohort
 ```
 
+No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and copy `SKILL.md` into `.agents/skills/cohort/`. Download the skill zip under Assets, not Source code; only the skill zip has SKILL.md at its root.
+
 ## Step 4: load and propose
 
 Start Kimi Code CLI in the vault directory and invoke the connector:

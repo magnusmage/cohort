@@ -209,7 +209,7 @@ How you start the skill differs per product; verified against the Kimi
 Code CLI docs and the Kimi Help Center on 2026-10-04.
 
 - **Kimi Code CLI** (primary): the one-command installer
-  (`curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh`)
+  (`curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.3.0/install.sh | sh`)
   copies this skill to `~/.kimi-code/skills/cohort/`; prefer to read it
   first? Download `install.sh`, read it, then run it: same result, and
   it runs nothing else. Manual alternative: copy this folder to

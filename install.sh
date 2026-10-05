@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Cohort installer: copy the Kimi connector skill to the user scope.
 #
-#   curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.2.0/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.3.0/install.sh | sh
 #
 # or download install.sh, read it, then run it. Both do the same.
 #
@@ -11,12 +11,12 @@
 # gitleaks, or touch any vault.
 set -eu
 
-TAG="v0.2.0"
+TAG="v0.3.0"
 REPO_URL="${COHORT_REPO_URL:-https://github.com/magnusmage/cohort.git}"
 SKILLS_DIR="${COHORT_SKILLS_DIR:-$HOME/.kimi-code/skills/cohort}"
 # sha256 of connectors/kimi/SKILL.md with CR stripped, so clones on
 # Windows (CRLF working trees) verify the same content.
-SKILL_SHA256="49ee3887a4e4e7a904088a99c4cf658ff42c75d2dd0013aeba1d244b4a0a2235"
+SKILL_SHA256="91d78523983b1f13d0a81039d728e5e83bc1db5cd7a22248462494cbbf6e2822"
 
 say() { printf '%s\n' "$*"; }
 die() { say "install.sh: error: $*" >&2; exit 1; }
