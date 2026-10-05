@@ -5,6 +5,32 @@ project policy.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-05
+
+The skill on main catches up with the shipped tag, and the release now
+ships a downloadable skill zip alongside the installer.
+
+### Added
+
+- Bootstrap repo choice: the connector can create the repo, or attach to
+  an empty repo the user created in the browser. A pasted link is
+  validated before anything runs (github.com host, push access for the
+  authenticated user, contents empty or template-only) and refused with
+  a plain reason on any failure.
+- `scripts/package-skill.sh <tool-dir> <version>`: zips a connector
+  skill with `SKILL.md` at the archive root, for release assets.
+- Invocation docs verified per product: a "How you start it" table in
+  the README and QUICKSTART, `whenToUse` trigger phrases in the skill
+  frontmatter, and install notes that match the real mechanics of Kimi
+  Code CLI and Kimi Work desktop.
+
+### Changed
+
+- The skill's `description`, Rule 0, and install notes now match the
+  real invocation mechanics: `/skill:cohort` or plain language in Kimi
+  Code CLI; the `/` Skills menu or plain language in Kimi Work desktop
+  (no `/skill:name` syntax there). `spec_version` is 0.3.0.
+
 ## [0.2.0] - 2026-10-02
 
 Pre-release audit pass over every shipping surface, then the
@@ -34,11 +60,6 @@ two-path README.
   as the tested spine), `install.sh` (pinned tag, annotated-tag and
   checksum verification, copies the skill to the user scope, runs
   nothing else), and a two-path README with a daily-use table.
-- Bootstrap repo choice: the connector can create the repo, or attach to
-  an empty repo the user created in the browser. A pasted link is
-  validated before anything runs (github.com host, push access for the
-  authenticated user, contents empty or template-only) and refused with
-  a plain reason on any failure.
 
 ### Fixed
 
