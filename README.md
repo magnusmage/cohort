@@ -72,7 +72,7 @@ next: start Kimi Code CLI and run /skill:cohort, then say "set up my team vault"
 
 Prefer to read installer scripts first? Run `curl -fsSLO .../install.sh`, read the file, then `sh install.sh`. Same result.
 
-No `curl` or `sh` available? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and copy `SKILL.md` into `~/.kimi-code/skills/cohort/`. Download the skill zip under Assets, not Source code; only the skill zip has SKILL.md at its root.
+No `curl` or `sh` available? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your Kimi skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
 
 If Step 2 fails: on Windows the usual cause is no curl or no sh outside Kimi Code CLI, so use the terminal inside Kimi Code CLI. Otherwise copy the full error message into your Kimi chat and ask what to do. Do not retry blindly.
 
