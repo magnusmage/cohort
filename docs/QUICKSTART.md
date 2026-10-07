@@ -62,7 +62,7 @@ mkdir -p .agents/skills
 cp -R ../cohort/connectors/kimi .agents/skills/cohort
 ```
 
-No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and copy `SKILL.md` into `.agents/skills/cohort/`. Download the skill zip under Assets, not Source code; only the skill zip has SKILL.md at its root.
+No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your Kimi skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
 
 ## Step 4: load and propose
 
