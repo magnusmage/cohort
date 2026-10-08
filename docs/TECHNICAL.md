@@ -138,7 +138,7 @@ standard (YAML frontmatter + markdown instructions). It must:
 | Respect context budget | Load the bounded set only: `facts.md`, `pointers.md`, the 5 most recent sessions, tag-matched decisions. In v1 that set is the budget; there is no configurable token budget (post-v1 scope). Summarize old sessions, do not paste them |
 | Redact | Apply the redaction rules before any commit |
 | Fail closed | Refuse and explain on: secrets detected, schema violation, injection patterns in vault content |
-| Declare platform | Frontmatter `metadata.platform`, `metadata.tested_versions` |
+| Declare platform | Platform and tested versions declared in the skill file: frontmatter `metadata.platform`, `metadata.tested_versions`, or an HTML comment immediately after the frontmatter when the host parser rejects unknown frontmatter keys (the shipped Kimi connector uses the comment form) |
 | Consent-first activation | Do nothing unless the user invoked the connector or asked about shared team context. Never activate unprompted. |
 | Respect client config | Read `.cohort.local.toml` on every run; honor `activation_scope` and `writeback_mode`; refuse to run if the file is missing and offer the setup choices |
 | Bootstrap | On first invocation with no vault configured, walk the user through setup per §6a: disclaimer gate, auth, repo creation, then the setup wizard as the tested spine |
