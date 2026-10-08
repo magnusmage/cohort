@@ -16,9 +16,12 @@
 # SKILL.md at the pinned tag, with CR stripped so clones on Windows (CRLF
 # working trees) verify the same content. kimi is pinned at v0.3.0; the
 # zcode hash is pinned to the content shipping in the next release tag.
-# When the pin moves, recompute both. A mismatch refuses the install;
-# a release that predates a connector skips it with a notice, unless
-# that connector was named explicitly on the command line.
+# Note: main's kimi SKILL.md already differs from the v0.3.0 pin (the
+# frontmatter fix landed after the tag), so the release commit that moves
+# TAG must recompute BOTH pins or the installer refuses on checksum.
+# A mismatch refuses the install; a release that predates a connector
+# skips it with a notice, unless that connector was named explicitly on
+# the command line.
 set -eu
 
 TAG="v0.3.0"
