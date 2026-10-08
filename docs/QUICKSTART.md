@@ -3,25 +3,27 @@
 This walks one person through creating a vault, then adding a teammate.
 Everything happens in your own GitHub account. Cohort never sees your vault.
 
-## Which Kimi is this for?
+## Which client is this for?
 
-| Kimi product | Connector runs? | Notes |
+| Client | Connector runs? | Notes |
 |---|---|---|
-| Kimi Code CLI | Yes | The primary target. Install the skill, invoke with `/skill:cohort`. |
+| Kimi Code CLI | Yes | Install the skill, invoke with `/skill:cohort`. |
 | Kimi Work desktop | Yes | Attach the vault folder as the workspace; the same instructions apply. |
-| Kimi Chat (web) | No | No local disk or git. A teammate can export vault files into a Kimi Chat Project as read-only reference; nothing syncs back, and the install commands will not run there. |
+| ZCode | Yes | The same vault, the same steps. Install the skill, invoke with `/cohort`. |
+| Kimi Chat (web) and other chats without disk access | No | No local disk or git. A teammate can export vault files into a chat project as read-only reference; nothing syncs back, and the install commands will not run there. |
 
 **How you start it:**
 
-| Product | How you start the Cohort skill |
+| Client | How you start the Cohort skill |
 |---|---|
 | Kimi Code CLI | Type `/skill:cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
 | Kimi Work desktop | Type `/` in the chat input and pick Cohort from the Skills menu, or describe the task in plain language and Kimi Agent triggers it. |
+| ZCode | Type `/cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
 
 ## What you need
 
 - git, and a GitHub account
-- A Kimi Code CLI installation (the first connector runs there)
+- A client with the Cohort connector installed (Kimi Code CLI or ZCode)
 - gitleaks (the redaction scanner): https://github.com/gitleaks/gitleaks
 
 ## Step 1: create your vault repo
@@ -62,21 +64,27 @@ mkdir -p .agents/skills
 cp -R ../cohort/connectors/kimi .agents/skills/cohort
 ```
 
-No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your Kimi skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
+The shared `.agents/skills/` path works for both clients: ZCode and Kimi
+both scan it at workspace scope. For a client-specific folder instead,
+copy to `.zcode/skills/cohort` (ZCode) or `.kimi-code/skills/cohort`
+(Kimi).
+
+No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your client's skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
 
 ## Step 4: load and propose
 
-Start Kimi Code CLI in the vault directory and invoke the connector:
+Start your client in the vault directory and invoke the connector
+(`/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode):
 
 ```
-/skill:cohort load the vault
+/cohort load the vault
 ```
 
 You should see the provenance header and your (empty) vault context. Work on
 something, then:
 
 ```
-/skill:cohort propose a writeback
+/cohort propose a writeback
 ```
 
 The connector drafts new facts and open threads. You edit, approve, or
