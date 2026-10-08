@@ -5,13 +5,13 @@ trade-off, and overturning any of them requires a spec change and review.
 
 ## Platform limits
 
-- **Kimi Chat (web) is consume-only.** It has no local disk access and no
-  git, so the connector cannot run there. A teammate can upload vault files
-  to a Kimi Chat Project as reference material, but nothing syncs back
-  automatically.
-- **One connector exists.** Kimi Code CLI is the first and currently only
-  connector. Claude and ChatGPT connectors are planned; until they ship, a
-  mixed team shares the vault but only the Kimi side syncs automatically.
+- **Kimi Chat (web) and other chats without disk access are consume-only.**
+  They have no local disk access and no git, so the connector cannot run
+  there. A teammate can upload vault files to a chat project as reference
+  material, but nothing syncs back automatically.
+- **Two connectors exist.** Kimi Code CLI and ZCode. Claude and ChatGPT
+  connectors are planned; until they ship, a mixed team shares the vault
+  but only the Kimi and ZCode sides sync automatically.
 - **Slash-command quality depends on the host.** Skills are instructions,
   not code. Connector behavior can drift between model versions, which is
   why `metadata.tested_versions` is mandatory.
