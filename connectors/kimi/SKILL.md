@@ -1,13 +1,11 @@
 ---
 name: cohort
-description: Load shared team context from a Cohort vault (a git repository of markdown) at session start, and propose human-approved writebacks at session end. Use when the user asks about shared team context, the team vault, or asks to sync or propose team memory.
-whenToUse: When the user says "set up my team vault", "load team context", "sync team memory", "propose a writeback", or asks about the team vault, shared team context, or team decisions
-metadata:
-  platform: kimi
-  tested_versions: ["Kimi Code CLI >= 1.0"]
-  spec_version: "0.3.0"
-  vault_format: ">=1.0.0 <2.0.0"
+description: Load shared team context from a Cohort vault (a git repository of markdown) at session start, and propose human-approved writebacks at session end.
+type: prompt
+whenToUse: When the user says set up my team vault, load team context, sync team memory, propose a writeback, or asks about the team vault or shared team context
 ---
+
+<!-- platform: kimi | tested_versions: Kimi Code CLI >= 1.0 | spec_version: 0.3.0 | vault_format: >=1.0.0 <2.0.0 -->
 
 # Cohort, the Kimi connector
 
