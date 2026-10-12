@@ -77,14 +77,16 @@ Start your client in the vault directory and invoke the connector
 (`/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode):
 
 ```
-/cohort load the vault
+/skill:cohort load the vault    # Kimi Code CLI
+/cohort load the vault          # ZCode
 ```
 
 You should see the provenance header and your (empty) vault context. Work on
 something, then:
 
 ```
-/cohort propose a writeback
+/skill:cohort propose a writeback    # Kimi Code CLI
+/cohort propose a writeback          # ZCode
 ```
 
 The connector drafts new facts and open threads. You edit, approve, or

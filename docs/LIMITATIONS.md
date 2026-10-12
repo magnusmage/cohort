@@ -14,7 +14,9 @@ trade-off, and overturning any of them requires a spec change and review.
   but only the Kimi and ZCode sides sync automatically.
 - **Slash-command quality depends on the host.** Skills are instructions,
   not code. Connector behavior can drift between model versions, which is
-  why `metadata.tested_versions` is mandatory.
+  why every connector must declare its platform and tested versions in
+  the skill file (frontmatter or the HTML-comment form, per TECHNICAL.md
+  section 6).
 
 ## Sync and consistency limits
 

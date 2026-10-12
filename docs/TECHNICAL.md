@@ -214,4 +214,7 @@ Explicit non-goal for v1: embeddings and vector search. We revisit this only if 
 - Monetization, payments, seat management.
 - Vector databases, embeddings, agent frameworks.
 - Autonomous writeback without human approval.
-- More than one platform connector per release phase.
+- More than one connector **for the same platform** in a release. Each
+  platform ships exactly one connector, reviewed per the T5 checklist;
+  connectors for different platforms may and do ship together (today:
+  Kimi and ZCode).

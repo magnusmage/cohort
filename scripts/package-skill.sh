@@ -52,4 +52,15 @@ if [ -z "$RAW" ] || [ "$RAW" = "0" ] || [ "$RAW" != "$NORAW" ]; then
   exit 1
 fi
 
+# Fail closed: only documented frontmatter keys may ship. The host
+# uploaders reject unknown keys, which is how a CR-free but
+# non-conformant skill still fails in the field (see the v0.3.0 saga).
+FM_ALLOWLIST='^(---|name:|description:|type:|whenToUse:|when_to_use:|when-to-use:|disableModelInvocation:|disable-model-invocation:|disable_model_invocation:|arguments:)'
+FM_VIOLATIONS=$(unzip -p "$OUT" "$ENTRY" 2>/dev/null | sed -n '2,/^---$/p' | grep -vE "$FM_ALLOWLIST" | grep -c . || true)
+if [ "$BAD_KEYS" != "0" ]; then
+  echo "package-skill.sh: error: SKILL.md frontmatter carries keys outside the documented host schema; refusing to ship it" >&2
+  rm -f "$OUT"
+  exit 1
+fi
+
 echo "wrote $OUT"
