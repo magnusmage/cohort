@@ -5,6 +5,28 @@ project policy.
 
 ## [Unreleased]
 
+### Added
+
+- ZCode connector (`connectors/zcode/SKILL.md`), mirroring the Kimi
+  connector per the connector spec (TECHNICAL.md §6): same consent-first
+  activation, bootstrap flow, LOAD/PROPOSE lifecycle, redaction gate, and
+  hard limits. ZCode-specific: `when_to_use` frontmatter as the host
+  parser reads it, the HTML-comment platform declaration, install paths
+  `~/.zcode/skills/cohort/` (user) and `.zcode/skills/cohort/` (workspace)
+  with the host's shadowing rule noted, `/cohort` or plain-language
+  invocation, and tooling at `~/.zcode/cohort`.
+- The installer now installs every connector present at the pinned tag
+  (default) or one connector named on the command line
+  (`install.sh kimi|zcode`), verifying each SKILL.md checksum; a release
+  that predates a connector skips it with a notice unless it was named
+  explicitly.
+
+### Changed
+
+- README, QUICKSTART, EXPLAINED, and LIMITATIONS document ZCode alongside
+  Kimi: the client table, the how-you-start-it table, install steps, the
+  developers path, daily use, and the connector-count limitation.
+
 ## [0.3.0] - 2026-10-05
 
 The skill on main catches up with the shipped tag, and the release now

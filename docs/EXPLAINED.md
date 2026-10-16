@@ -20,12 +20,12 @@ human saying yes, and no AI or tool name ever appears in the vault.
 
 | Command | What it does | When you run it |
 |---|---|---|
-| `curl -fsSL .../install.sh \| sh` | Installs the connector skill to `~/.kimi-code/skills/cohort/`. Verifies the pinned release tag and the skill's checksum first; runs nothing else. | Once per machine |
+| `curl -fsSL .../install.sh \| sh` | Installs the connector skills to `~/.kimi-code/skills/cohort/` and `~/.zcode/skills/cohort/`, one per host. Verifies the pinned release tag and each skill's checksum first; runs nothing else. A release that predates a connector skips it with a notice. | Once per machine |
 | `sh scripts/setup.sh` | Seeds a vault from the template, asks the visibility choice and the three consent questions, provisions the redaction rules, installs the pre-commit hook. | Once per vault |
 | `sh scripts/validate-vault.sh <dir>` | Checks a vault against the v1 schema: required files, manifest keys, frontmatter, session naming, local config discipline. Exit 0 means valid. | Anytime, before pushing |
 | `gh auth login` | Authenticates the GitHub CLI with the OAuth browser flow. A fine-grained PAT is the fallback; the token goes to the credential manager only. | Once per machine |
 | `gitleaks protect --staged` | The redaction gate. Scans staged files against the vault's rules and refuses the commit on any hit. Normally runs inside the pre-commit hook. | Every commit, automatically |
-| `/skill:cohort` (Kimi Code CLI) or the Cohort entry in the `/` Skills menu (Kimi Work desktop) | Invokes the connector: load context, or propose a writeback. Plain language ("load team context") also triggers it. | Daily |
+| `/skill:cohort` (Kimi Code CLI), `/cohort` (ZCode), or the Cohort entry in the `/` Skills menu (Kimi Work desktop) | Invokes the connector: load context, or propose a writeback. Plain language ("load team context") also triggers it. | Daily |
 
 ## The consent choices
 
