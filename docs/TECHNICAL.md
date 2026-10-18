@@ -27,7 +27,9 @@ chatbots directly.
 |                                                                      |
 |   +------------+   load   +----------------+                        |
 |   | AI chatbot | <------- |   connector    |                        |
-|   |(Kimi, ZCode)| -------> |  (SKILL.md)    |                        |
+|   |   (Kimi,   | -------> |  (SKILL.md)    |                        |
+|   |   ZCode,   |          |                |                        |
+|   |   Claude)  |          |                |                        |
 |   +------------+  propose +-------+--------+                        |
 |                                   | git pull/push                   |
 |                          +--------v--------+                        |
@@ -138,7 +140,7 @@ standard (YAML frontmatter + markdown instructions). It must:
 | Respect context budget | Load the bounded set only: `facts.md`, `pointers.md`, the 5 most recent sessions, tag-matched decisions. In v1 that set is the budget; there is no configurable token budget (post-v1 scope). Summarize old sessions, do not paste them |
 | Redact | Apply the redaction rules before any commit |
 | Fail closed | Refuse and explain on: secrets detected, schema violation, injection patterns in vault content |
-| Declare platform | Platform and tested versions declared in the skill file: frontmatter `metadata.platform`, `metadata.tested_versions`, or an HTML comment immediately after the frontmatter when the host parser rejects unknown frontmatter keys (the shipped Kimi and ZCode connectors use the comment form) |
+| Declare platform | Platform and tested versions declared in the skill file: frontmatter `metadata.platform`, `metadata.tested_versions`, or an HTML comment immediately after the frontmatter when the host parser rejects unknown frontmatter keys (the shipped Kimi, ZCode, and Claude connectors use the comment form) |
 | Consent-first activation | Do nothing unless the user invoked the connector or asked about shared team context. Never activate unprompted. |
 | Respect client config | Read `.cohort.local.toml` on every run; honor `activation_scope` and `writeback_mode`; refuse to run if the file is missing and offer the setup choices |
 | Bootstrap | On first invocation with no vault configured, walk the user through setup per §6a: disclaimer gate, auth, repo creation, then the setup wizard as the tested spine |
@@ -149,7 +151,8 @@ On first invocation with no vault configured (for example the user says
 "set up my team vault"), the connector runs the bootstrap flow recorded
 in `docs/decisions/ADR-0016-bootstrap-mode.md` and specified in the
 connectors (`connectors/kimi/SKILL.md`, the reference implementation,
-and `connectors/zcode/SKILL.md`, "Bootstrap"):
+and `connectors/zcode/SKILL.md` and `connectors/claude/SKILL.md`,
+"Bootstrap"):
 
 1. Disclaimer gate: a verbatim statement of what Cohort does with the
    user's data and token, shown before anything runs. Continue only on
@@ -217,4 +220,4 @@ Explicit non-goal for v1: embeddings and vector search. We revisit this only if 
 - More than one connector **for the same platform** in a release. Each
   platform ships exactly one connector, reviewed per the T5 checklist;
   connectors for different platforms may and do ship together (today:
-  Kimi and ZCode).
+  Kimi, ZCode, and Claude).

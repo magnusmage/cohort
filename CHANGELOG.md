@@ -7,6 +7,16 @@ project policy.
 
 ### Added
 
+- Claude connector (`connectors/claude/SKILL.md`), mirroring the Kimi
+  connector per the connector spec (TECHNICAL.md §6): same consent-first
+  activation, bootstrap flow, LOAD/PROPOSE lifecycle, redaction gate, and
+  hard limits. Claude-specific: `name`/`description` frontmatter as the
+  Claude Code host parser reads it, the HTML-comment platform
+  declaration, install paths `~/.claude/skills/cohort/` (user) and
+  `.claude/skills/cohort/` (project) with the project-over-user shadowing
+  rule noted, `/cohort` or plain-language invocation, tooling at
+  `~/.claude/cohort`, and a consume-only note for Claude.ai web (no local
+  disk or git).
 - ZCode connector (`connectors/zcode/SKILL.md`), mirroring the Kimi
   connector per the connector spec (TECHNICAL.md §6): same consent-first
   activation, bootstrap flow, LOAD/PROPOSE lifecycle, redaction gate, and
@@ -17,15 +27,16 @@ project policy.
   invocation, and tooling at `~/.zcode/cohort`.
 - The installer now installs every connector present at the pinned tag
   (default) or one connector named on the command line
-  (`install.sh kimi|zcode`), verifying each SKILL.md checksum; a release
-  that predates a connector skips it with a notice unless it was named
-  explicitly.
+  (`install.sh kimi|zcode|claude`), verifying each SKILL.md checksum; a
+  release that predates a connector skips it with a notice unless it was
+  named explicitly.
 
 ### Changed
 
-- README, QUICKSTART, EXPLAINED, and LIMITATIONS document ZCode alongside
-  Kimi: the client table, the how-you-start-it table, install steps, the
-  developers path, daily use, and the connector-count limitation.
+- README, QUICKSTART, EXPLAINED, and LIMITATIONS document Claude and
+  ZCode alongside Kimi: the client table, the how-you-start-it table,
+  install steps, the developers path, daily use, and the connector-count
+  limitation.
 
 ## [0.3.0] - 2026-10-05
 
