@@ -1,0 +1,42 @@
+import { z } from "zod";
+
+/**
+ * Phase 1 tool input schemas and the shared stub marker.
+ *
+ * These are registration stubs. The real behaviour for each tool lands in later
+ * Phase 1 tickets (the git transport, the policy loader, the write gate, and the
+ * load and propose tools). Keeping the schemas here means the handlers in
+ * server.ts stay a thin wiring layer.
+ */
+
+export const TOOL_NOT_IMPLEMENTED = "is not implemented yet (Phase 1 scaffold).";
+
+/** cohort_load: bounded, fenced context from the vault. */
+export const loadInput = {
+  topics: z
+    .array(z.string())
+    .optional()
+    .describe("Optional topic filters to narrow the loaded context."),
+  scope: z
+    .string()
+    .optional()
+    .describe("Optional scope hint, reserved for future use."),
+};
+
+/** A single proposed record. Permissive on purpose; the gate validates in a later ticket. */
+const recordItem = z.object({
+  kind: z.enum(["fact", "decision", "thread"]),
+  text: z.string().min(1),
+});
+
+/** cohort_propose: records to run through the write gate. */
+export const proposeInput = {
+  items: z
+    .array(recordItem)
+    .min(1)
+    .describe("Records to run through the write gate."),
+};
+
+/** cohort_status and cohort_policy_get take no input. */
+export const statusInput = {};
+export const policyGetInput = {};

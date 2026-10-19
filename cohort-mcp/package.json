@@ -1,0 +1,62 @@
+{
+  "name": "cohort-mcp",
+  "version": "0.1.0",
+  "description": "Cohort MCP server: the client-neutral engine behind the Cohort shared-memory vault. Scaffold with the four Phase 1 tool stubs.",
+  "license": "Apache-2.0",
+  "author": "evdatsion",
+  "type": "module",
+  "bin": {
+    "cohort-mcp": "dist/index.js"
+  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "files": [
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/server.js",
+    "dist/server.d.ts",
+    "dist/tools.js",
+    "dist/tools.d.ts",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "pretest": "tsc -p tsconfig.test.json",
+    "test": "node --test .test-build/server.test.js",
+    "audit": "npm audit --audit-level=high",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist .test-build",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magnusmage/cohort.git",
+    "directory": "cohort-mcp"
+  },
+  "homepage": "https://github.com/magnusmage/cohort#readme",
+  "bugs": {
+    "url": "https://github.com/magnusmage/cohort/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cohort",
+    "shared-memory"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "20.19.43",
+    "eslint": "10.13.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0"
+  }
+}
