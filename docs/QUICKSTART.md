@@ -10,7 +10,8 @@ Everything happens in your own GitHub account. Cohort never sees your vault.
 | Kimi Code CLI | Yes | Install the skill, invoke with `/skill:cohort`. |
 | Kimi Work desktop | Yes | Attach the vault folder as the workspace; the same instructions apply. |
 | ZCode | Yes | The same vault, the same steps. Install the skill, invoke with `/cohort`. |
-| Kimi Chat (web) and other chats without disk access | No | No local disk or git. A teammate can export vault files into a chat project as read-only reference; nothing syncs back, and the install commands will not run there. |
+| Claude Code (CLI, desktop, IDE) | Yes | The same vault, the same steps. Install the skill, invoke with `/cohort`. |
+| Kimi Chat (web), Claude.ai web, and other chats without disk access | No | No local disk or git. A teammate can export vault files into a chat project as read-only reference; nothing syncs back, and the install commands will not run there. |
 
 **How you start it:**
 
@@ -19,11 +20,12 @@ Everything happens in your own GitHub account. Cohort never sees your vault.
 | Kimi Code CLI | Type `/skill:cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
 | Kimi Work desktop | Type `/` in the chat input and pick Cohort from the Skills menu, or describe the task in plain language and Kimi Agent triggers it. |
 | ZCode | Type `/cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
+| Claude Code | Type `/cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
 
 ## What you need
 
 - git, and a GitHub account
-- A client with the Cohort connector installed (Kimi Code CLI or ZCode)
+- A client with the Cohort connector installed (Kimi Code CLI, ZCode, or Claude Code)
 - gitleaks (the redaction scanner): https://github.com/gitleaks/gitleaks
 
 ## Step 1: create your vault repo
@@ -64,21 +66,22 @@ mkdir -p .agents/skills
 cp -R ../cohort/connectors/kimi .agents/skills/cohort
 ```
 
-The shared `.agents/skills/` path works for both clients: ZCode and Kimi
-both scan it at workspace scope. For a client-specific folder instead,
-copy to `.zcode/skills/cohort` (ZCode) or `.kimi-code/skills/cohort`
-(Kimi).
+The shared `.agents/skills/` path works for Kimi and ZCode: both scan it
+at workspace scope. For a client-specific folder instead, copy to
+`.zcode/skills/cohort` (ZCode) or `.kimi-code/skills/cohort` (Kimi). For
+Claude Code, copy the `connectors/claude` folder to `.claude/skills/cohort`
+(project scope) or `~/.claude/skills/cohort` (user scope).
 
 No clone handy? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your client's skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
 
 ## Step 4: load and propose
 
 Start your client in the vault directory and invoke the connector
-(`/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode):
+(`/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode or Claude Code):
 
 ```
 /skill:cohort load the vault    # Kimi Code CLI
-/cohort load the vault          # ZCode
+/cohort load the vault          # ZCode or Claude Code
 ```
 
 You should see the provenance header and your (empty) vault context. Work on
@@ -86,7 +89,7 @@ something, then:
 
 ```
 /skill:cohort propose a writeback    # Kimi Code CLI
-/cohort propose a writeback          # ZCode
+/cohort propose a writeback          # ZCode or Claude Code
 ```
 
 The connector drafts new facts and open threads. You edit, approve, or
