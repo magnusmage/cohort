@@ -29,6 +29,8 @@
     "dist/lint.d.ts",
     "dist/gate.js",
     "dist/gate.d.ts",
+    "dist/load.js",
+    "dist/load.d.ts",
     "README.md"
   ],
   "engines": {

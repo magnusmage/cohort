@@ -2,6 +2,7 @@ import process from "node:process";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
+import { type LoadResult, defaultLoadContext } from "./load.js";
 import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
 import {
   TOOL_NOT_IMPLEMENTED,
@@ -25,9 +26,14 @@ export const PHASE1_TOOLS = [
 /** Returns the caller's effective, read-only policy view. */
 export type PolicyProvider = () => Promise<EffectivePolicyView>;
 
+/** Returns a bounded, fenced slice of the vault. */
+export type ContextProvider = (args: { topics?: string[]; scope?: string }) => Promise<LoadResult>;
+
 export interface ServerOptions {
   /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
   policyProvider?: PolicyProvider;
+  /** Supplies the fenced context for cohort_load. Injectable for tests. */
+  contextProvider?: ContextProvider;
 }
 
 function notImplemented(tool: string) {
@@ -51,6 +57,8 @@ function textResult(text: string) {
 export function createServer(options: ServerOptions = {}): McpServer {
   const policyProvider: PolicyProvider =
     options.policyProvider ?? (() => defaultPolicyView(process.env, process.cwd()));
+  const contextProvider: ContextProvider =
+    options.contextProvider ?? ((args) => defaultLoadContext(process.env, process.cwd(), args));
 
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
@@ -59,10 +67,13 @@ export function createServer(options: ServerOptions = {}): McpServer {
     {
       title: "Load team context",
       description:
-        "Return bounded team context from the vault, fenced as data not instructions. Stub in the scaffold.",
+        "Return bounded team context from the vault, fenced as data not instructions.",
       inputSchema: loadInput,
     },
-    async () => notImplemented("cohort_load"),
+    async ({ topics, scope }) => {
+      const result = await contextProvider({ topics, scope });
+      return textResult(result.text);
+    },
   );
 
   server.registerTool(
