@@ -17,6 +17,8 @@
     "dist/server.d.ts",
     "dist/tools.js",
     "dist/tools.d.ts",
+    "dist/git.js",
+    "dist/git.d.ts",
     "README.md"
   ],
   "engines": {
@@ -27,7 +29,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "pretest": "tsc -p tsconfig.test.json",
-    "test": "node --test .test-build/server.test.js",
+    "test": "node --test .test-build/*.test.js",
     "audit": "npm audit --audit-level=high",
     "start": "node dist/index.js",
     "clean": "rm -rf dist .test-build",
