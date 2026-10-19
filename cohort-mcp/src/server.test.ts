@@ -4,10 +4,11 @@ import { test } from "node:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 
+import type { LoadResult } from "./load.js";
 import type { EffectivePolicyView } from "./policy.js";
 import { PHASE1_TOOLS, type ServerOptions, createServer } from "./server.js";
 
-const STUB_TOOLS = ["cohort_load", "cohort_propose", "cohort_status"] as const;
+const STUB_TOOLS = ["cohort_propose", "cohort_status"] as const;
 
 const SAMPLE_VIEW: EffectivePolicyView = {
   agent: "claude-code@alice",
@@ -28,9 +29,15 @@ async function connectClient(options: ServerOptions = {}): Promise<Client> {
 }
 
 const VALID_ARGS: Record<(typeof STUB_TOOLS)[number], Record<string, unknown>> = {
-  cohort_load: {},
   cohort_propose: { items: [{ kind: "fact", text: "scaffold smoke test" }] },
   cohort_status: {},
+};
+
+const SAMPLE_LOAD: LoadResult = {
+  text: "**Shared team context from the Cohort vault** (last synced 00:00).\n(fenced)",
+  included: 1,
+  withheld: 0,
+  loadMode: "ask",
 };
 
 test("registers exactly the four Phase 1 tools", async () => {
@@ -57,6 +64,14 @@ test("cohort_policy_get returns the read-only view from the provider", async () 
   const content = result.content as Array<{ type: string; text?: string }>;
   const view = JSON.parse(content[0]?.text ?? "{}") as EffectivePolicyView;
   assert.deepEqual(view, SAMPLE_VIEW);
+});
+
+test("cohort_load returns the fenced context from the provider", async () => {
+  const client = await connectClient({ contextProvider: async () => SAMPLE_LOAD });
+  const result = await client.callTool({ name: "cohort_load", arguments: {} });
+  assert.notEqual(result.isError, true, "cohort_load must not be an error");
+  const content = result.content as Array<{ type: string; text?: string }>;
+  assert.equal(content[0]?.text, SAMPLE_LOAD.text);
 });
 
 test("there is no tool that writes policy", async () => {
