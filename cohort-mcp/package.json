@@ -21,6 +21,8 @@
     "dist/git.d.ts",
     "dist/record.js",
     "dist/record.d.ts",
+    "dist/policy.js",
+    "dist/policy.d.ts",
     "README.md"
   ],
   "engines": {

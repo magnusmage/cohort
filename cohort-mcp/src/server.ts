@@ -1,5 +1,8 @@
+import process from "node:process";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
+import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
 import {
   TOOL_NOT_IMPLEMENTED,
   loadInput,
@@ -19,6 +22,14 @@ export const PHASE1_TOOLS = [
   "cohort_policy_get",
 ] as const;
 
+/** Returns the caller's effective, read-only policy view. */
+export type PolicyProvider = () => Promise<EffectivePolicyView>;
+
+export interface ServerOptions {
+  /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
+  policyProvider?: PolicyProvider;
+}
+
 function notImplemented(tool: string) {
   return {
     isError: true,
@@ -26,13 +37,21 @@ function notImplemented(tool: string) {
   };
 }
 
+function textResult(text: string) {
+  return { content: [{ type: "text" as const, text }] };
+}
+
 /**
- * Build the Cohort MCP server with the four Phase 1 tools registered as stubs.
+ * Build the Cohort MCP server.
  *
- * Exported (rather than only started) so tests can connect an in-memory client
- * and assert the tool list and the handshake without a real client.
+ * cohort_policy_get is implemented and read-only: it returns the effective
+ * policy for the server-established agent identity and exposes no path to
+ * write policy.yml. The other three tools are stubs until their tickets.
  */
-export function createServer(): McpServer {
+export function createServer(options: ServerOptions = {}): McpServer {
+  const policyProvider: PolicyProvider =
+    options.policyProvider ?? (() => defaultPolicyView(process.env, process.cwd()));
+
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
   server.registerTool(
@@ -72,10 +91,13 @@ export function createServer(): McpServer {
     {
       title: "Read effective policy",
       description:
-        "Return the caller's effective, read-only policy limits. Stub in the scaffold.",
+        "Return the caller's effective, read-only policy limits. The model cannot write policy.yml.",
       inputSchema: policyGetInput,
     },
-    async () => notImplemented("cohort_policy_get"),
+    async () => {
+      const view = await policyProvider();
+      return textResult(JSON.stringify(view, null, 2));
+    },
   );
 
   return server;
