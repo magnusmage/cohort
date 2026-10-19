@@ -38,6 +38,15 @@ project policy.
   install steps, the developers path, daily use, and the connector-count
   limitation.
 
+### Fixed
+
+- `scripts/package-skill.sh` checked an unset variable (`BAD_KEYS`) in the
+  frontmatter allow-list gate instead of the count it had just computed
+  (`FM_VIOLATIONS`). Under `set -eu` that aborted the packager for every
+  connector. It now checks the computed count, so packaging succeeds for a
+  conformant skill and still refuses one that carries a disallowed
+  frontmatter key.
+
 ## [0.3.0] - 2026-10-05
 
 The skill on main catches up with the shipped tag, and the release now
