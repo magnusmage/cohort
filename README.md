@@ -1,10 +1,28 @@
 # Cohort
 
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Docs: CC BY 4.0](https://img.shields.io/badge/docs-CC%20BY%204.0-lightgrey.svg)](docs/LICENSE.md)
+[![CI](https://github.com/magnusmage/cohort/actions/workflows/security.yml/badge.svg)](https://github.com/magnusmage/cohort/actions/workflows/security.yml)
+[![Release](https://img.shields.io/github/v/tag/magnusmage/cohort?label=release&sort=semver)](https://github.com/magnusmage/cohort/releases)
+
 > Shared context for AI chatbots. One markdown vault on GitHub. Every teammate's AI, regardless of account, plan, or platform, reads and writes the same memory.
 
 ![Cohort architecture: teammates' AI clients load bounded context from the shared vault repo, and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request. No servers exist.](docs/architecture.svg)
 
 ---
+
+## Contents
+
+- [What it is](#what-it-is)
+- [Current status](#current-status-v030-october-2026)
+- [How to start](#how-to-start)
+- [Daily use](#daily-use)
+- [Roadmap](#roadmap)
+- [Security](#security)
+- [Where to read more](#where-to-read-more)
+- [Repository layout](#repository-layout)
+- [Contributing](#contributing)
+- [License and authorship](#license-and-authorship)
 
 ## What it is
 
@@ -120,6 +138,30 @@ gh auth login                                        # GitHub auth for repo crea
 | Team context at session start | Type `/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode or Claude Code, pick Cohort from the `/` menu in Kimi Work desktop, or ask "load team context" (with project scope chosen at setup it auto-loads) |
 | Save a decision, fact, or open thread | Ask the connector to propose a writeback; edit and approve the draft |
 | Add a teammate | Add them as a GitHub collaborator on the vault repo. That is the entire sharing mechanism |
+
+## Roadmap
+
+Today Cohort is connectors plus a vault. The next milestone is `cohort-mcp`, a
+local stdio MCP server that becomes the client-neutral engine behind every
+connector: server-enforced consent through a versioned `policy.yml`, trust tiers for
+machine-written memory, a write gate with secret scanning, and read-time
+data-fencing. It is built and verified on Claude first, then reused for other
+clients. Progress is tracked in the
+[Phase 1 epic](https://github.com/magnusmage/cohort/issues/38), and the full plan
+lives in [docs/planning](docs/planning/).
+
+## Security
+
+Cohort is shared memory that multiple agents read and write, so the memory itself is
+an attack surface: a poisoned record could read back as an instruction to another
+teammate's agent. The project treats security as a property of every change. Stored
+memory and the model are untrusted; only approved, scanned writes land, and a local
+scan blocks secrets before every commit. See the
+[security model](docs/SECURITY.md) for the threat model, the redaction rules, and
+the consent model.
+
+Found a vulnerability? Please report it privately through GitHub's private
+vulnerability reporting on this repository, not as a public issue.
 
 ## Where to read more
 
