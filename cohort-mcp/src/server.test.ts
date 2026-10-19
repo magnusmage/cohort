@@ -6,9 +6,10 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 
 import type { LoadResult } from "./load.js";
 import type { EffectivePolicyView } from "./policy.js";
+import type { ProposeItemResult } from "./propose.js";
 import { PHASE1_TOOLS, type ServerOptions, createServer } from "./server.js";
 
-const STUB_TOOLS = ["cohort_propose", "cohort_status"] as const;
+const STUB_TOOLS = ["cohort_status"] as const;
 
 const SAMPLE_VIEW: EffectivePolicyView = {
   agent: "claude-code@alice",
@@ -29,9 +30,12 @@ async function connectClient(options: ServerOptions = {}): Promise<Client> {
 }
 
 const VALID_ARGS: Record<(typeof STUB_TOOLS)[number], Record<string, unknown>> = {
-  cohort_propose: { items: [{ kind: "fact", text: "scaffold smoke test" }] },
   cohort_status: {},
 };
+
+const SAMPLE_PROPOSE: ProposeItemResult[] = [
+  { index: 0, kind: "fact", id: "f-000000000000", decision: "pending", handle: "abcd", reason: "held for human approval" },
+];
 
 const SAMPLE_LOAD: LoadResult = {
   text: "**Shared team context from the Cohort vault** (last synced 00:00).\n(fenced)",
@@ -47,7 +51,7 @@ test("registers exactly the four Phase 1 tools", async () => {
   assert.deepEqual(names, [...PHASE1_TOOLS].sort());
 });
 
-test("the three unimplemented tools report explicit stubs", async () => {
+test("the remaining stub reports not implemented", async () => {
   const client = await connectClient();
   for (const name of STUB_TOOLS) {
     const result = await client.callTool({ name, arguments: VALID_ARGS[name] });
@@ -55,6 +59,18 @@ test("the three unimplemented tools report explicit stubs", async () => {
     const content = result.content as Array<{ type: string; text?: string }>;
     assert.match(content[0]?.text ?? "", /not implemented/i, `${name} should say not implemented`);
   }
+});
+
+test("cohort_propose returns per-item gate decisions from the runner", async () => {
+  const client = await connectClient({ proposeRunner: async () => SAMPLE_PROPOSE });
+  const result = await client.callTool({
+    name: "cohort_propose",
+    arguments: { items: [{ kind: "fact", text: "a proposed fact" }] },
+  });
+  assert.notEqual(result.isError, true, "cohort_propose must not be a protocol error");
+  const content = result.content as Array<{ type: string; text?: string }>;
+  const parsed = JSON.parse(content[0]?.text ?? "[]") as ProposeItemResult[];
+  assert.deepEqual(parsed, SAMPLE_PROPOSE);
 });
 
 test("cohort_policy_get returns the read-only view from the provider", async () => {
@@ -80,5 +96,6 @@ test("there is no tool that writes policy", async () => {
   const names = tools.map((t) => t.name);
   for (const n of names) {
     assert.doesNotMatch(n, /policy_set|policy_write|set_policy|write_policy/i, `${n} must not be a policy writer`);
+    assert.doesNotMatch(n, /approve|verify/i, `${n} must not be a model-callable approval path in Phase 1`);
   }
 });

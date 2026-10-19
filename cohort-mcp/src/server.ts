@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { type LoadResult, defaultLoadContext } from "./load.js";
 import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
+import { type ProposeItem, type ProposeItemResult, defaultPropose } from "./propose.js";
 import {
   TOOL_NOT_IMPLEMENTED,
   loadInput,
@@ -29,11 +30,16 @@ export type PolicyProvider = () => Promise<EffectivePolicyView>;
 /** Returns a bounded, fenced slice of the vault. */
 export type ContextProvider = (args: { topics?: string[]; scope?: string }) => Promise<LoadResult>;
 
+/** Runs proposed items through the write gate and returns a per-item decision. */
+export type ProposeRunner = (items: ProposeItem[]) => Promise<ProposeItemResult[]>;
+
 export interface ServerOptions {
   /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
   policyProvider?: PolicyProvider;
   /** Supplies the fenced context for cohort_load. Injectable for tests. */
   contextProvider?: ContextProvider;
+  /** Runs proposals through the gate for cohort_propose. Injectable for tests. */
+  proposeRunner?: ProposeRunner;
 }
 
 function notImplemented(tool: string) {
@@ -59,6 +65,8 @@ export function createServer(options: ServerOptions = {}): McpServer {
     options.policyProvider ?? (() => defaultPolicyView(process.env, process.cwd()));
   const contextProvider: ContextProvider =
     options.contextProvider ?? ((args) => defaultLoadContext(process.env, process.cwd(), args));
+  const proposeRunner: ProposeRunner =
+    options.proposeRunner ?? ((items) => defaultPropose(process.env, process.cwd(), items));
 
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
@@ -80,11 +88,13 @@ export function createServer(options: ServerOptions = {}): McpServer {
     "cohort_propose",
     {
       title: "Propose a writeback",
-      description:
-        "Run proposed records through the server-enforced write gate. Stub in the scaffold.",
+      description: "Run proposed records through the server-enforced write gate.",
       inputSchema: proposeInput,
     },
-    async () => notImplemented("cohort_propose"),
+    async ({ items }) => {
+      const results = await proposeRunner(items as ProposeItem[]);
+      return textResult(JSON.stringify(results, null, 2));
+    },
   );
 
   server.registerTool(

@@ -23,10 +23,14 @@ export const loadInput = {
     .describe("Optional scope hint, reserved for future use."),
 };
 
-/** A single proposed record. Permissive on purpose; the gate validates in a later ticket. */
+/** A single proposed record. The server stamps provenance; the model supplies only kind, text, and an optional class hint. */
 const recordItem = z.object({
   kind: z.enum(["fact", "decision", "thread"]),
-  text: z.string().min(1),
+  text: z.string().min(1).describe("The record body."),
+  class: z
+    .string()
+    .optional()
+    .describe("Optional policy class hint (for example coding-convention). A hint only; the gate decides."),
 });
 
 /** cohort_propose: records to run through the write gate. */
