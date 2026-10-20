@@ -11,7 +11,7 @@
   <!-- teammate A -->
   <rect x="30" y="70" width="180" height="96" rx="8" fill="#f6f8fa" stroke="#57606a"/>
   <text x="120" y="94" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">teammate A</text>
-  <text x="120" y="113" text-anchor="middle" font-size="11" fill="#1f2328">AI client (Kimi Code CLI)</text>
+  <text x="120" y="113" text-anchor="middle" font-size="11" fill="#1f2328">AI client, any platform</text>
   <text x="120" y="129" text-anchor="middle" font-size="10" fill="#57606a">+ cohort skill</text>
   <text x="120" y="147" text-anchor="middle" font-size="10" fill="#57606a">on the teammate's machine</text>
 

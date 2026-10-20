@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" role="img" aria-labelledby="t d" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
+  <title id="t">A Cohort session</title>
+  <desc id="d">A terminal session: an AI client loads bounded, verified-first team context under a token budget, a teammate proposes a new fact which is held for human approval as a pull request, and a human verifies the record from the command line.</desc>
+  <defs>
+    <linearGradient id="term" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1526"/><stop offset="1" stop-color="#0a1120"/>
+    </linearGradient>
+  </defs>
+  <rect width="860" height="440" rx="14" fill="url(#term)" stroke="rgba(255,255,255,0.08)"/>
+
+  <!-- title bar -->
+  <rect width="860" height="38" rx="14" fill="rgba(255,255,255,0.04)"/>
+  <rect y="24" width="860" height="14" fill="rgba(255,255,255,0.04)"/>
+  <circle cx="24" cy="19" r="6" fill="#ff5f57"/>
+  <circle cx="44" cy="19" r="6" fill="#febc2e"/>
+  <circle cx="64" cy="19" r="6" fill="#28c840"/>
+  <text x="430" y="23" text-anchor="middle" font-size="11" fill="#64748b">team-vault · cohort</text>
+
+  <g font-size="13">
+    <!-- load -->
+    <text x="24" y="74" fill="#22d3ee">$</text>
+    <text x="44" y="74" fill="#e2e8f0">claude<tspan fill="#475569">   # or kimi, zcode</tspan></text>
+    <text x="24" y="98" fill="#818cf8">&#62;</text>
+    <text x="44" y="98" fill="#e2e8f0">/cohort load team context</text>
+
+    <text x="44" y="126" fill="#64748b">Shared team context from the Cohort vault</text>
+    <text x="44" y="146" fill="#64748b">(3 verified, 1 unverified; verified shown first)</text>
+    <text x="44" y="170" fill="#a5f3fc">[f-a1b2…] decision · verified by alice</text>
+    <text x="60" y="190" fill="#cbd5e1">Adopt Postgres for the primary store.</text>
+    <text x="44" y="212" fill="#475569">(retrieval budget: ~420 of 8000 tokens used)</text>
+
+    <!-- propose -->
+    <text x="24" y="246" fill="#818cf8">&#62;</text>
+    <text x="44" y="246" fill="#e2e8f0">remember: we rate-limit the API at 100 req/s per key</text>
+    <text x="44" y="272" fill="#94a3b8">cohort_propose <tspan fill="#64748b">→</tspan> <tspan fill="#febc2e">pending</tspan> (held for human approval)</text>
+    <text x="44" y="292" fill="#64748b">opened PR · nothing lands until a human approves</text>
+
+    <!-- verify -->
+    <text x="24" y="330" fill="#22d3ee">$</text>
+    <text x="44" y="330" fill="#e2e8f0">cohort verify --by alice f-9f3c2a1b7e45</text>
+    <text x="44" y="356" fill="#28c840">f-9f3c2a1b7e45: verified</text>
+
+    <!-- why -->
+    <text x="24" y="390" fill="#22d3ee">$</text>
+    <text x="44" y="390" fill="#e2e8f0">cohort why f-9f3c2a1b7e45 <tspan fill="#475569"># who, which model, when</tspan></text>
+    <text x="44" y="414" fill="#64748b">first seen 2026-10-18 · alice · model claude-opus · from git</text>
+  </g>
+</svg>

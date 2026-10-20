@@ -1,181 +1,202 @@
-# Cohort
+<p align="center">
+  <img src="docs/hero.svg" alt="Cohort: shared memory for your team's AI" width="100%">
+</p>
 
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Docs: CC BY 4.0](https://img.shields.io/badge/docs-CC%20BY%204.0-lightgrey.svg)](docs/LICENSE.md)
-[![CI](https://github.com/magnusmage/cohort/actions/workflows/security.yml/badge.svg)](https://github.com/magnusmage/cohort/actions/workflows/security.yml)
-[![Release](https://img.shields.io/github/v/tag/magnusmage/cohort?label=release&sort=semver)](https://github.com/magnusmage/cohort/releases)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-6366f1.svg" alt="License: Apache-2.0"></a>
+  <a href="docs/LICENSE.md"><img src="https://img.shields.io/badge/docs-CC%20BY%204.0-22d3ee.svg" alt="Docs: CC BY 4.0"></a>
+  <a href="https://github.com/magnusmage/cohort/actions/workflows/security.yml"><img src="https://github.com/magnusmage/cohort/actions/workflows/security.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/magnusmage/cohort/releases"><img src="https://img.shields.io/github/v/tag/magnusmage/cohort?label=release&sort=semver&color=818cf8" alt="Release"></a>
+  <img src="https://img.shields.io/badge/roadmap-6%2F6%20phases%20shipped-28c840.svg" alt="Roadmap: all six phases shipped">
+</p>
 
-> Shared context for AI chatbots. One markdown vault on GitHub. Every teammate's AI, regardless of account, plan, or platform, reads and writes the same memory.
+<p align="center">
+  <b>One markdown vault on GitHub. Every teammate's AI reads and writes the same memory,<br>regardless of account, plan, or platform, and a human approves every change.</b>
+</p>
 
-![Cohort architecture: teammates' AI clients load bounded context from the shared vault repo, and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request. No hosted server; the repo is the only shared place.](docs/architecture.svg)
+<p align="center">
+  <a href="#quickstart">Quickstart</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#whats-inside">What's inside</a> ·
+  <a href="#the-engine">The engine</a> ·
+  <a href="#security">Security</a> ·
+  <a href="docs/EXPLAINED.md">Full docs</a>
+</p>
 
 ---
 
-## Contents
+## Why Cohort
 
-- [What it is](#what-it-is)
-- [Current status](#current-status-v030-october-2026)
-- [How to start](#how-to-start)
-- [Daily use](#daily-use)
-- [Roadmap](#roadmap)
-- [Security](#security)
-- [Where to read more](#where-to-read-more)
-- [Repository layout](#repository-layout)
-- [Contributing](#contributing)
-- [License and authorship](#license-and-authorship)
+Your team's AI assistants each start every session blank. What one teammate's
+assistant learned (the decision you made, the fact you pinned, the thread you
+left open) is invisible to everyone else's. Paste the same context again and
+again, or lose it.
 
-## What it is
+Cohort gives the team one shared memory. A single git repository holds your
+facts, decisions, and open threads in plain markdown. Each teammate's AI reads a
+bounded slice at the start of a session and proposes updates at the end, and a
+human approves every change before it lands. There is no hosted server and no
+account with us: the repo is the product, and it lives in your own GitHub.
 
-Cohort gives a team shared memory for their AI chatbots. One git repository holds the team's facts, decisions, and open threads in plain markdown. Each teammate's AI reads a bounded slice at session start and proposes updates at session end, and a human approves every change before it lands. There is no hosted server and no account with us: the repo is the product, and it lives in your GitHub. The Phase 1 `cohort-mcp` server is a local process on your own machine, not a hosted service.
+## How it works
 
-## Current status (v0.3.0, October 2026)
+<p align="center">
+  <img src="docs/architecture.svg" alt="Teammates' AI clients load bounded context from a shared git vault and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request." width="100%">
+</p>
 
-Works today:
+1. **Load.** At session start, your AI pulls a bounded, verified-first slice of
+   the vault, fenced as data and never as instructions.
+2. **Propose.** At session end, it proposes new records. Every write passes a
+   local gate (secret and PII scan, injection linter, contradiction check) and
+   is held for a human.
+3. **Approve.** A human verifies the record from the terminal. Only then does it
+   become trusted memory. Git is the only transport, and the vault stays yours.
 
-- Install in under a minute: run one terminal command, or upload the skill zip in your client's skill settings. Both are on this page.
-- Conversational setup: the skill walks you through GitHub sign-in, vault creation (it creates the repo, or links one you made in your browser), and three consent choices.
-- Team memory load at session start, human-approved writebacks at session end, through review-gated pull requests.
-- Local secret scanning that blocks API keys, tokens, and private data before every commit.
-- Kimi connector for Kimi Code CLI and Kimi Work desktop; ZCode connector for the ZCode client; Claude connector for Claude Code (CLI, desktop, and IDE extensions).
+## See it
 
-Not yet:
+<p align="center">
+  <img src="docs/demo.svg" alt="A terminal session: an AI client loads verified-first context under a token budget, a teammate proposes a fact that is held for human approval as a pull request, and a human verifies and inspects the record from the command line." width="100%">
+</p>
 
-- A GPT connector (the vault format is client-neutral; Kimi, ZCode, and Claude ship today).
-- Google Drive as a storage option (git/GitHub is the only transport for now).
-- A public launch announcement.
+## What's inside
 
-## How to start
+<p align="center">
+  <img src="docs/overview.svg" alt="Cohort has three parts: the open-core engine, the retrieval and review intelligence (the moat), and a separate optional commercial control plane that never holds the only copy of the memory." width="100%">
+</p>
 
-### Which client is this for?
+The vault, the engine, and the moat are free and open under Apache-2.0 and run
+fully on your own machine. A separate, optional commercial control plane adds a
+hosted review and audit dashboard; it reads the vault but never holds the only
+copy, and no open-core component depends on it. The line is documented and
+enforced by a test. See [the open-core boundary](docs/OPEN-CORE.md).
 
-Cohort runs inside an AI client that can access your disk and git.
+## The engine
 
-| Client | Works with Cohort? |
+`cohort-mcp` is a local stdio Model Context Protocol server, the client-neutral
+engine any MCP client can run. It loads bounded, fenced context and runs
+human-approved writebacks through a server-enforced gate.
+
+| MCP tool | What it does |
 |---|---|
-| Kimi Code CLI (the terminal coding tool) | Yes, full setup and daily use. This guide walks Kimi and ZCode below. |
-| Kimi Work desktop | Yes. Attach your vault folder as the workspace, then follow the same steps. |
-| ZCode (the coding client) | Yes, full setup and daily use. Same vault, same steps, except where the client is named. |
-| Claude Code (CLI, desktop, or IDE extension) | Yes, full setup and daily use. Same vault, same steps, except where the client is named. |
-| Kimi Chat, Claude.ai web, and other chats without disk access | No. They cannot access your disk or git, so install commands will not run there. A teammate can export vault files and add them to a chat project as read-only reference, with no sync back. |
+| `cohort_load` | Return bounded team context, fenced as data, verified-first, under a token budget. |
+| `cohort_propose` | Run proposed records through the server-enforced write gate. |
+| `cohort_status` | Report effective policy, record counts, the quarantine queue, and stale records. |
+| `cohort_policy_get` | Return the caller's effective, read-only policy limits. |
+| `cohort_search` | Search the vault, honoring readable scope; verified-only by default. |
+| `cohort_why` | Return a record's provenance (who, which model, when) read from git history. |
 
-If you are reading this in a web chat and want the real thing, install a desktop client first (Kimi Code CLI, ZCode, or Claude Code), then start from the top.
+Some actions are human-run on the terminal by design, so the model can propose
+and read but never promote or retire a record:
 
-**How you start it:**
-
-| Client | How you start the Cohort skill |
+| CLI | What it does |
 |---|---|
-| Kimi Code CLI | Type `/skill:cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
-| Kimi Work desktop | Type `/` in the chat input and pick Cohort from the Skills menu, or describe the task in plain language and Kimi Agent triggers it. |
-| ZCode | Type `/cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
-| Claude Code | Type `/cohort` in the chat input, or just ask in plain language ("set up my team vault") and the model loads it for you. |
+| `cohort init` | Seed policy, wire your client, print next steps. |
+| `cohort verify` | Promote a record from quarantined to verified (human only). |
+| `cohort supersede` | Mark a record replaced; it leaves load but stays in git history. |
+| `cohort index` | Build the committed, diffable retrieval index (`--check` to verify). |
+| `cohort search` / `stats` | Look across the vault; report counts and load size. |
+| `cohort bridge` / `reabsorb` | Generate AGENTS.md, CLAUDE.md, Cursor rules, and fold hand-edits back as gated proposals. |
+| `cohort export` / `import` | Move a whole vault losslessly on a portable schema. |
+| `cohort access` | Evaluate multi-vault, per-path access (least-privilege, fail-closed). |
+| `cohort encrypt-setup` / `encrypt-check` | Wire git-crypt or age at-rest encryption and verify key hygiene. |
+| `cohort recover` / `retention` | Recover a removed record from git history; report the retention window. |
 
-### Everyone
+The engine and CLI live in [`cohort-mcp/`](cohort-mcp/); the commercial control
+plane lives in [`control-plane/`](control-plane/).
 
-What you need before you begin: a GitHub account (free), a client with the Cohort connector installed (Kimi Code CLI, ZCode, or Claude Code), and about five minutes. Nothing else. No Cohort account exists and none is needed.
+## Quickstart
 
-**Step 1. Open a terminal.**
+Cohort runs inside an AI client that can reach your disk and git: Kimi Code CLI,
+Kimi Work desktop, ZCode, or Claude Code (CLI, desktop, or IDE extension). A web
+chat with no disk access cannot run it.
 
-- Windows: open the terminal inside your client (Kimi Code CLI, ZCode, or Claude Code), or open Git Bash (it installs with Git).
-- Mac: open the Terminal app (press Cmd+Space, type Terminal).
-- Linux: open your terminal app.
-
-**Step 2. Paste this one line and press Enter:**
+**Install the connector (under a minute):**
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/magnusmage/cohort/v0.3.0/install.sh | sh
 ```
 
-The installer checks that the file matches the official v0.3.0 release exactly, then copies the connector skills onto your machine: one per client, each into its own skill folder, each verified against its checksum. When it finishes you will see:
+The installer verifies the release checksum, then copies the connector skill
+into each client's skill folder on your machine. Prefer to read it first? Run
+`curl -fsSLO .../install.sh`, read it, then `sh install.sh`.
 
-```
-installed cohort skill to <your home>/.kimi-code/skills/cohort
-next: start Kimi Code CLI and run /skill:cohort, then say "set up my team vault"
-installed cohort skill to <your home>/.zcode/skills/cohort
-next: start ZCode and run /cohort, then say "set up my team vault"
-installed cohort skill to <your home>/.claude/skills/cohort
-next: start Claude Code and run /cohort, then say "set up my team vault"
-```
+**Then, in your client's chat input** (not the terminal): type `/cohort`
+(`/skill:cohort` in Kimi Code CLI; the `/` Skills menu in Kimi Work desktop), or
+just say "set up my team vault". The connector explains what it does with your
+data and waits for your yes, walks you through GitHub sign-in and vault
+creation, and asks three consent choices. Every step waits for you.
 
-A release that predates a connector skips it with a notice, and each client reads only its own folder, so an extra copy is harmless. The ZCode and Claude connectors ship from the release that follows v0.3.0; until that tag is cut, install them with the manual copy in the Developers section below.
+<details>
+<summary>Client support, step-by-step setup, and the developer path</summary>
 
-Prefer to read installer scripts first? Run `curl -fsSLO .../install.sh`, read the file, then `sh install.sh`. Same result.
+### Which client is this for?
 
-No `curl` or `sh` available? Download the skill zip from the [v0.3.0 release](https://github.com/magnusmage/cohort/releases/tag/v0.3.0), unzip it, and upload the `cohort` folder in your client's skill settings. Download the skill zip under Assets, not Source code; only the skill zip unpacks to a ready skill folder.
+| Client | Works with Cohort? |
+|---|---|
+| Kimi Code CLI | Yes, full setup and daily use. |
+| Kimi Work desktop | Yes. Attach your vault folder as the workspace, then follow the same steps. |
+| ZCode | Yes, full setup and daily use. |
+| Claude Code (CLI, desktop, or IDE extension) | Yes, full setup and daily use. |
+| Kimi Chat, Claude.ai web, other chats without disk access | No. They cannot reach your disk or git. A teammate can export vault files into a chat project as read-only reference, with no sync back. |
 
-If Step 2 fails: on Windows the usual cause is no curl or no sh outside your client's terminal, so use the terminal inside your client. Otherwise copy the full error message into your chat and ask what to do. Do not retry blindly.
+### Step by step
 
-**Step 3 (optional, ten seconds). Check it landed:**
+1. **Open a terminal.** Windows: use the terminal inside your client, or Git Bash. Mac: the Terminal app. Linux: your terminal app.
+2. **Install:** paste the `curl` line above and press Enter. You will see one `installed cohort skill to ...` line per client.
+3. **Check it landed (optional):** `ls ~/.claude/skills/cohort` (or `~/.kimi-code/skills/cohort`, `~/.zcode/skills/cohort`).
+4. **Start your client in any project folder** and load the skill as above.
+5. **Answer the connector's questions in chat.** It creates your vault repo (or links an empty one you made in the browser), then asks when it loads context, when it proposes updates, and what content it reads.
 
-```sh
-ls ~/.kimi-code/skills/cohort   # Kimi
-ls ~/.zcode/skills/cohort       # ZCode
-ls ~/.claude/skills/cohort      # Claude Code
-```
+No `curl` or `sh`? Download the skill zip from the [latest release](https://github.com/magnusmage/cohort/releases), unzip it, and upload the `cohort` folder in your client's skill settings (use the skill zip under Assets, not Source code).
 
-Files listed means the skill is installed for your user, so every project on this machine can use it (this is "user scope"). To install for one project only, use the Developers path below.
-
-**Step 4. Start your client in any project folder.** In the chat input, not the terminal: Kimi Code CLI, type `/skill:cohort`; ZCode or Claude Code, type `/cohort`. Then send the message "set up my team vault".
-
-**Step 5. Answer the connector's questions in chat.** It first tells you exactly what it does with your data and waits for your yes. Then it walks you through GitHub sign-in (a browser window, preferred; a fine-grained token only if the browser flow cannot run) and creating your vault repo. You can let the connector create the repo, or create an empty private repo yourself at github.com/new (no README, no license) and paste its link. Then it asks three consent choices, each explained in one sentence before you decide: when it loads context, when it proposes updates, and what content it reads. Every step waits for you.
-
-When it finishes, it tells you to start your next session with the vault folder as the project directory. That folder is your team's memory from then on.
-
-### Developers
+### Developer path
 
 ```sh
-git clone https://github.com/magnusmage/cohort.git   # the tooling and spec
-sh cohort/scripts/setup.sh                           # seeds a vault, asks consent, installs the redaction hook
-cp -R cohort/connectors/kimi ~/.kimi-code/skills/cohort   # installs the Kimi connector
-cp -R cohort/connectors/zcode ~/.zcode/skills/cohort      # installs the ZCode connector
-cp -R cohort/connectors/claude ~/.claude/skills/cohort    # installs the Claude connector
-gh auth login                                        # GitHub auth for repo creation and PRs
+git clone https://github.com/magnusmage/cohort.git
+sh cohort/scripts/setup.sh                              # seed a vault, ask consent, install the redaction hook
+cp -R cohort/connectors/claude ~/.claude/skills/cohort  # or connectors/kimi, connectors/zcode
 ```
+
+Register the MCP engine with one command: `cohort init --vault <dir> --agent <id>`.
+
+</details>
 
 ### Daily use
 
 | You want | You do |
 |---|---|
-| Team context at session start | Type `/skill:cohort` in Kimi Code CLI, `/cohort` in ZCode or Claude Code, pick Cohort from the `/` menu in Kimi Work desktop, or ask "load team context" (with project scope chosen at setup it auto-loads) |
+| Team context at session start | Load the skill, or ask "load team context" (auto-loads with project scope) |
 | Save a decision, fact, or open thread | Ask the connector to propose a writeback; edit and approve the draft |
-| Add a teammate | Add them as a GitHub collaborator on the vault repo. That is the entire sharing mechanism |
+| Add a teammate | Add them as a GitHub collaborator on the vault repo. That is the whole sharing mechanism |
 
 ## Roadmap
 
-Today Cohort is connectors plus a vault. The next milestone is `cohort-mcp`, a
-local stdio MCP server that becomes the client-neutral engine behind every
-connector: server-enforced consent through a versioned `policy.yml`, trust tiers for
-machine-written memory, a write gate with secret scanning, and read-time
-data-fencing. It is built and verified on Claude first, then reused for other
-clients. Progress is tracked in the
-[Phase 1 epic](https://github.com/magnusmage/cohort/issues/38), and the full plan
-lives in [docs/planning](docs/planning/).
+All six phases are built, tested, and merged.
+
+- [x] **Phase 1: Walking skeleton.** Policy engine, record schema, git transport, write gate, and the first four tools.
+- [x] **Phase 2: Trust and safety spine.** Trust tiers, human-only verification, the adversarial suite.
+- [x] **Phase 3: Session capture and search.** Turn session notes into gated drafts; search the vault.
+- [x] **Phase 4: Adoption bridge.** Generate and reabsorb AGENTS.md / CLAUDE.md / Cursor rules; portable export and import.
+- [x] **Phase 5: The moat.** Git-native index, token-budgeted verified-first retrieval, contradiction detection, staleness and supersession, deterministic merge, and `cohort_why`.
+- [x] **Phase 6: Enterprise.** Open-core boundary, multi-vault access, at-rest encryption, retention and recovery, and the SSO-gated control-plane dashboard.
+
+The full plan lives in [docs/planning](docs/planning/).
 
 ## Security
 
-Cohort is shared memory that multiple agents read and write, so the memory itself is
-an attack surface: a poisoned record could read back as an instruction to another
-teammate's agent. The project treats security as a property of every change. Stored
-memory and the model are untrusted; only approved, scanned writes land, and a local
-scan blocks secrets before every commit. See the
-[security model](docs/SECURITY.md) for the threat model, the redaction rules, and
-the consent model.
+Cohort is shared memory that many agents read and write, so the memory itself is
+an attack surface: a poisoned record could read back as an instruction to
+another teammate's agent. The project treats security as a property of every
+change. Stored memory and the model are untrusted; only approved, scanned writes
+land; loaded memory is fenced as data, never instructions; a contradicting fact
+is held for a human instead of overriding a verified one; and the server is the
+only component that ever commits. There is no telemetry and no network call
+beyond your own git remote.
 
-Found a vulnerability? Please report it privately through GitHub's private
-vulnerability reporting on this repository, not as a public issue.
-
-## The cohort-mcp server (Phase 1, in progress)
-
-Cohort is growing a client-neutral engine: `cohort-mcp`, a local stdio Model
-Context Protocol server that any MCP client can run. It loads bounded, fenced
-context and runs human-approved writebacks through a server-enforced policy
-gate: consent via `policy.yml`, secret and PII scanning, and read-time
-data-fencing. It is built and verified on Claude first.
-
-It lives in [`cohort-mcp/`](cohort-mcp/) and is wired with one command,
-`cohort init`, which registers the server with Claude Code and Claude Desktop
-and seeds a starter `.cohort/policy.yml`. The plan and tickets are in
-[`docs/planning/`](docs/planning/), tracked in the
-[Phase 1 epic](https://github.com/magnusmage/cohort/issues/38).
+See the [security model](docs/SECURITY.md) for the threat model, the redaction
+rules, and the consent model. Found a vulnerability? Please report it privately
+through GitHub's private vulnerability reporting on this repository, not as a
+public issue.
 
 ## Where to read more
 
@@ -190,25 +211,25 @@ and seeds a starter `.cohort/policy.yml`. The plan and tickets are in
 ## Repository layout
 
 ```
-├── connectors/kimi/     The Kimi connector (SKILL.md, Agent Skills standard)
-├── connectors/zcode/    The ZCode connector (SKILL.md, Agent Skills standard)
-├── connectors/claude/   The Claude connector (SKILL.md, Agent Skills standard)
+├── cohort-mcp/          The MCP server and CLI: the open-core engine and the moat
+├── control-plane/       The commercial control plane: read-only, SSO-gated dashboard
+├── connectors/          Kimi, ZCode, and Claude connectors (Agent Skills standard)
 ├── vault-template/      Blank vault scaffold (copied into your own repo)
 ├── example-vault/       Synthetic demo vault (CC0, all content fictional)
 ├── scripts/             Setup wizard and vault validator
 ├── security/            Versioned gitleaks redaction rules
 ├── install.sh           Pinned-tag installer for the connector skill
-└── docs/                The public spec, decision records, the diagram
+└── docs/                The public spec, decision records, and diagrams
 ```
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Commits use Conventional Commits and
-DCO sign-off (`git commit -s`). Security issues: please report privately via
-GitHub private vulnerability reporting, not public issues.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Commits use Conventional Commits and DCO
+sign-off (`git commit -s`). Security issues: please report privately via GitHub
+private vulnerability reporting, not public issues.
 
 ## License and authorship
 
-Apache-2.0 for code, CC BY 4.0 for docs, CC0 for example vault content.
-Created and maintained by [Sarmad](https://github.com/evdatsion). See
+Apache-2.0 for code, CC BY 4.0 for docs, CC0 for example vault content. Created
+and maintained by [Sarmad](https://github.com/evdatsion). See
 [CITATION.cff](CITATION.cff) for citation metadata.
