@@ -8,17 +8,26 @@ import {
   serverEntry,
   writeDesktopConfig,
 } from "./init.js";
+import { verifyRecords } from "./verify.js";
 
 /**
- * cohort init: seed the vault policy, wire Claude, and print the next steps.
+ * The cohort CLI.
  *
- * External tools (claude mcp add, the setup wizard, gh) are the user's to run;
- * this command does the deterministic, idempotent parts (seed policy.yml, write
- * the Desktop config, or install the SKILL.md fallback) and prints the exact,
- * version-pinned registration command.
+ *   cohort init    seed the vault policy, wire Claude, print the next steps.
+ *   cohort verify  human-only promotion of records to verified.
+ *
+ * verify is a CLI command on purpose, not an MCP tool: the model can propose
+ * and read, but promotion is a human action run from the terminal.
  */
 
-interface Flags {
+const USAGE = [
+  "usage:",
+  "  cohort init --vault <dir> --agent <id> [--scope user|project] [--desktop-config <path>]",
+  "              [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]",
+  "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
+].join("\n");
+
+interface InitFlags {
   vaultDir?: string;
   agentId?: string;
   scope?: "user" | "project";
@@ -28,8 +37,8 @@ interface Flags {
   skillDest?: string;
 }
 
-function parseFlags(args: string[]): Flags {
-  const flags: Flags = {};
+function parseInitFlags(args: string[]): InitFlags {
+  const flags: InitFlags = {};
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     const next = (): string | undefined => args[(i += 1)];
@@ -46,17 +55,8 @@ function parseFlags(args: string[]): Flags {
   return flags;
 }
 
-const USAGE =
-  "usage: cohort init --vault <dir> --agent <id> [--scope user|project] [--desktop-config <path>] [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]";
-
-async function main(): Promise<void> {
-  const [command, ...rest] = process.argv.slice(2);
-  if (command !== "init") {
-    process.stdout.write(`${USAGE}\n`);
-    process.exit(command ? 1 : 0);
-  }
-
-  const flags = parseFlags(rest);
+async function runInit(args: string[]): Promise<void> {
+  const flags = parseInitFlags(args);
   const vaultDir = flags.vaultDir;
   const agentId = flags.agentId;
   if (!vaultDir || !agentId) {
@@ -86,6 +86,37 @@ async function main(): Promise<void> {
   process.stdout.write(
     "next: start your client with the vault as the project directory, and add teammates as GitHub collaborators.\n",
   );
+}
+
+async function runVerify(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let by: string | undefined;
+  const ids: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--by") by = args[(i += 1)];
+    else if (arg && !arg.startsWith("--")) ids.push(arg);
+  }
+  if (!vaultDir || !by || ids.length === 0) {
+    process.stderr.write(`cohort verify: --vault, --by, and at least one id are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const results = await verifyRecords(vaultDir, ids, by);
+  for (const r of results) {
+    process.stdout.write(`${r.id}: ${r.status}${r.reason ? ` (${r.reason})` : ""}\n`);
+  }
+  process.exit(results.some((r) => r.status === "error") ? 1 : 0);
+}
+
+async function main(): Promise<void> {
+  const [command, ...rest] = process.argv.slice(2);
+  if (command === "init") await runInit(rest);
+  else if (command === "verify") await runVerify(rest);
+  else {
+    process.stdout.write(`${USAGE}\n`);
+    process.exit(command ? 1 : 0);
+  }
 }
 
 main().catch((err: unknown) => {
