@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import process from "node:process";
 
 import {
@@ -11,6 +12,14 @@ import {
 } from "./init.js";
 import { loadAccess, resolveAccess } from "./access.js";
 import { generateBridge } from "./bridge.js";
+import {
+  checkHygiene,
+  gitattributesBlock,
+  gitignoreBlock,
+  loadEncryptionFromText,
+  readOrEmpty,
+  upsertBlock,
+} from "./encryption.js";
 import { buildIndex, indexStatus, writeIndex } from "./indexer.js";
 import { exportVault, importVault, parsePortable, serializePortable } from "./portable.js";
 import { loadPolicy } from "./policy.js";
@@ -42,6 +51,8 @@ const USAGE = [
   "  cohort export --vault <dir> [--out <file>]",
   "  cohort import --vault <dir> --in <file>",
   "  cohort access --config <file> --vault <id> --path <p> [--agent <id>] [--write]",
+  "  cohort encrypt-setup --vault <dir>    # wire .gitattributes and .gitignore for at-rest encryption",
+  "  cohort encrypt-check --vault <dir>    # verify no key is tracked and sensitive paths are encrypted",
 ].join("\n");
 
 interface InitFlags {
@@ -307,6 +318,62 @@ async function runAccess(args: string[]): Promise<void> {
   process.exit(decision.allowed ? 0 : 1);
 }
 
+function vaultFlag(args: string[]): string | undefined {
+  for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === "--vault") return args[i + 1];
+  }
+  return undefined;
+}
+
+async function runEncryptSetup(args: string[]): Promise<void> {
+  const vaultDir = vaultFlag(args);
+  if (!vaultDir) {
+    process.stderr.write(`cohort encrypt-setup: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const configText = await readOrEmpty(join(vaultDir, ".cohort", "encryption.yml"));
+  if (!configText) {
+    process.stderr.write("cohort encrypt-setup: create .cohort/encryption.yml first (tool and encrypt globs)\n");
+    process.exit(2);
+  }
+  const cfg = loadEncryptionFromText(configText);
+  const gaPath = join(vaultDir, ".gitattributes");
+  const giPath = join(vaultDir, ".gitignore");
+  await writeFile(gaPath, upsertBlock(await readOrEmpty(gaPath), gitattributesBlock(cfg)), "utf8");
+  await writeFile(giPath, upsertBlock(await readOrEmpty(giPath), gitignoreBlock()), "utf8");
+  process.stdout.write(
+    [
+      `wired ${cfg.encrypt.length} path(s) through the ${cfg.tool} filter in .gitattributes`,
+      "key patterns added to .gitignore",
+      cfg.tool === "git-crypt"
+        ? "next: install git-crypt, run `git-crypt init`, and share the key out of band (never commit it)"
+        : "next: install age, configure the age filter, and keep the identity file out of the repo (never commit it)",
+      "then run `cohort encrypt-check --vault <dir>` before committing",
+      "",
+    ].join("\n"),
+  );
+}
+
+async function runEncryptCheck(args: string[]): Promise<void> {
+  const vaultDir = vaultFlag(args);
+  if (!vaultDir) {
+    process.stderr.write(`cohort encrypt-check: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const configText = await readOrEmpty(join(vaultDir, ".cohort", "encryption.yml"));
+  const cfg = configText ? loadEncryptionFromText(configText) : { tool: "git-crypt" as const, encrypt: [] };
+  const report = await checkHygiene(vaultDir, cfg, {
+    gitattributes: await readOrEmpty(join(vaultDir, ".gitattributes")),
+    gitignore: await readOrEmpty(join(vaultDir, ".gitignore")),
+  });
+  if (report.ok) {
+    process.stdout.write("encryption hygiene ok: no key tracked, sensitive paths wired, key patterns ignored\n");
+    return;
+  }
+  for (const p of report.problems) process.stdout.write(`problem: ${p}\n`);
+  process.exit(1);
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
@@ -319,6 +386,8 @@ async function main(): Promise<void> {
   else if (command === "export") await runExport(rest);
   else if (command === "import") await runImport(rest);
   else if (command === "access") await runAccess(rest);
+  else if (command === "encrypt-setup") await runEncryptSetup(rest);
+  else if (command === "encrypt-check") await runEncryptCheck(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);

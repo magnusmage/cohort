@@ -68,6 +68,8 @@
     "dist/why.d.ts",
     "dist/access.js",
     "dist/access.d.ts",
+    "dist/encryption.js",
+    "dist/encryption.d.ts",
     "README.md"
   ],
   "engines": {
