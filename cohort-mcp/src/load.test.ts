@@ -78,3 +78,50 @@ test("topics filter narrows the returned records", async () => {
   assert.match(result.text, /Postgres/);
   assert.doesNotMatch(result.text, /structured logging/);
 });
+
+async function vaultWith(
+  records: Array<{ path: string; kind: "fact" | "decision" | "thread"; text: string; status?: string; verifiedBy?: string }>,
+): Promise<string> {
+  const base = await mkdtemp(join(tmpdir(), "cohort-load-t-"));
+  const root = join(base, "work");
+  await git(["init", root]);
+  await git(["-C", root, "symbolic-ref", "HEAD", "refs/heads/main"]);
+  await git(["-C", root, "config", "user.name", "T"]);
+  await git(["-C", root, "config", "user.email", "t@e.com"]);
+  for (const r of records) {
+    const rec = createRecord({ kind: r.kind, text: r.text, source });
+    if (r.status) rec.meta.status = r.status as typeof rec.meta.status;
+    if (r.verifiedBy) rec.meta.verified_by = r.verifiedBy;
+    const abs = join(root, r.path);
+    await mkdir(join(abs, ".."), { recursive: true });
+    await writeFile(abs, serializeRecord(rec));
+  }
+  await git(["-C", root, "add", "-A"]);
+  await git(["-C", root, "commit", "-m", "seed"]);
+  return root;
+}
+
+test("verified records are shown first and labeled by trust tier", async () => {
+  const root = await vaultWith([
+    { path: "facts/q.md", kind: "fact", text: "Quarantined claim." },
+    { path: "facts/v.md", kind: "fact", text: "Verified claim.", status: "verified", verifiedBy: "alice" },
+  ]);
+  const result = await loadContext(root, POLICY, AGENT);
+  assert.ok(
+    result.text.indexOf("Verified claim.") < result.text.indexOf("Quarantined claim."),
+    "verified record must come first",
+  );
+  assert.match(result.text, /verified by alice/);
+  assert.match(result.text, /unverified \(agent-asserted\)/);
+  assert.match(result.text, /1 verified, 1 unverified/);
+});
+
+test("superseded records drop out of load but a current one stays", async () => {
+  const root = await vaultWith([
+    { path: "facts/old.md", kind: "fact", text: "Old superseded claim.", status: "superseded" },
+    { path: "facts/new.md", kind: "fact", text: "Current claim." },
+  ]);
+  const result = await loadContext(root, POLICY, AGENT);
+  assert.doesNotMatch(result.text, /Old superseded claim/);
+  assert.match(result.text, /Current claim/);
+});
