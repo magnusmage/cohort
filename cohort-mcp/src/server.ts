@@ -7,7 +7,8 @@ import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
 import { type ProposeItem, type ProposeItemResult, defaultPropose } from "./propose.js";
 import { type SearchResult, defaultSearch } from "./search.js";
 import { type StatusView, defaultStatus } from "./status.js";
-import { loadInput, policyGetInput, proposeInput, searchInput, statusInput } from "./tools.js";
+import { type WhyResult, defaultWhy } from "./why.js";
+import { loadInput, policyGetInput, proposeInput, searchInput, statusInput, whyInput } from "./tools.js";
 
 export const SERVER_NAME = "cohort-mcp";
 export const SERVER_VERSION = "0.1.0";
@@ -21,7 +22,7 @@ export const PHASE1_TOOLS = [
 ] as const;
 
 /** All tools the server currently registers (Phase 1 tools plus later additions). */
-export const TOOLS = [...PHASE1_TOOLS, "cohort_search"] as const;
+export const TOOLS = [...PHASE1_TOOLS, "cohort_search", "cohort_why"] as const;
 
 /** Returns the caller's effective, read-only policy view. */
 export type PolicyProvider = () => Promise<EffectivePolicyView>;
@@ -38,6 +39,9 @@ export type StatusProvider = () => Promise<StatusView>;
 /** Runs a vault search and returns the hits. */
 export type SearchProvider = (args: { query: string; includeQuarantined?: boolean }) => Promise<SearchResult>;
 
+/** Returns provenance for one record, read from git history. */
+export type WhyProvider = (args: { id: string }) => Promise<WhyResult>;
+
 export interface ServerOptions {
   /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
   policyProvider?: PolicyProvider;
@@ -49,6 +53,8 @@ export interface ServerOptions {
   statusProvider?: StatusProvider;
   /** Runs vault search for cohort_search. Injectable for tests. */
   searchProvider?: SearchProvider;
+  /** Supplies provenance for cohort_why. Injectable for tests. */
+  whyProvider?: WhyProvider;
 }
 
 function textResult(text: string) {
@@ -73,6 +79,8 @@ export function createServer(options: ServerOptions = {}): McpServer {
     options.statusProvider ?? (() => defaultStatus(process.env, process.cwd()));
   const searchProvider: SearchProvider =
     options.searchProvider ?? ((args) => defaultSearch(process.env, process.cwd(), args));
+  const whyProvider: WhyProvider =
+    options.whyProvider ?? (({ id }) => defaultWhy(process.env, process.cwd(), id));
 
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
@@ -140,6 +148,20 @@ export function createServer(options: ServerOptions = {}): McpServer {
     },
     async ({ query, include_quarantined }) => {
       const result = await searchProvider({ query, includeQuarantined: include_quarantined });
+      return textResult(JSON.stringify(result, null, 2));
+    },
+  );
+
+  server.registerTool(
+    "cohort_why",
+    {
+      title: "Explain a record's provenance",
+      description:
+        "Return who, which model, when, and why a record exists, read from git history. Read-only forensics.",
+      inputSchema: whyInput,
+    },
+    async ({ id }) => {
+      const result = await whyProvider({ id });
       return textResult(JSON.stringify(result, null, 2));
     },
   );

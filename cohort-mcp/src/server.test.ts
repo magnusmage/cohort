@@ -10,6 +10,7 @@ import type { ProposeItemResult } from "./propose.js";
 import type { SearchResult } from "./search.js";
 import { TOOLS, type ServerOptions, createServer } from "./server.js";
 import type { StatusView } from "./status.js";
+import type { WhyResult } from "./why.js";
 
 const SAMPLE_VIEW: EffectivePolicyView = {
   agent: "claude-code@alice",
@@ -65,11 +66,33 @@ const SAMPLE_LOAD: LoadResult = {
   budget: 8000,
 };
 
-test("registers the Phase 1 tools plus cohort_search", async () => {
+test("registers the Phase 1 tools plus cohort_search and cohort_why", async () => {
   const client = await connectClient();
   const { tools } = await client.listTools();
   const names = tools.map((t) => t.name).sort();
   assert.deepEqual(names, [...TOOLS].sort());
+});
+
+test("cohort_why returns provenance from the provider", async () => {
+  const sample: WhyResult = {
+    found: true,
+    id: "f-000000000000",
+    path: "facts/f-000000000000.md",
+    kind: "fact",
+    status: "verified",
+    claimed: { agent: "claude-code@alice", model: "claude-opus-4-8", commit: null, added: "2026-01-01", verified_by: "alice", supersedes: null },
+    history: {
+      firstSeen: { commit: "abc", author: "Alice", date: "2026-01-01T00:00:00Z", subject: "add" },
+      lastChanged: { commit: "abc", author: "Alice", date: "2026-01-01T00:00:00Z", subject: "add" },
+      commitCount: 1,
+    },
+    preview: "We chose Postgres.",
+  };
+  const client = await connectClient({ whyProvider: async () => sample });
+  const result = await client.callTool({ name: "cohort_why", arguments: { id: "f-000000000000" } });
+  assert.notEqual(result.isError, true);
+  const content = result.content as Array<{ type: string; text?: string }>;
+  assert.deepEqual(JSON.parse(content[0]?.text ?? "{}"), sample);
 });
 
 test("cohort_search returns hits from the provider", async () => {
