@@ -7,7 +7,7 @@
   <a href="docs/LICENSE.md"><img src="https://img.shields.io/badge/docs-CC%20BY%204.0-22d3ee.svg" alt="Docs: CC BY 4.0"></a>
   <a href="https://github.com/magnusmage/cohort/actions/workflows/security.yml"><img src="https://github.com/magnusmage/cohort/actions/workflows/security.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/magnusmage/cohort/releases"><img src="https://img.shields.io/github/v/tag/magnusmage/cohort?label=release&sort=semver&color=818cf8" alt="Release"></a>
-  <img src="https://img.shields.io/badge/roadmap-6%2F6%20phases%20shipped-28c840.svg" alt="Roadmap: all six phases shipped">
+  <img src="https://img.shields.io/badge/roadmap-phases%201--5%20shipped-28c840.svg" alt="Roadmap: Phases 1 to 5 shipped">
 </p>
 
 <p align="center">
@@ -61,14 +61,14 @@ account with us: the repo is the product, and it lives in your own GitHub.
 ## What's inside
 
 <p align="center">
-  <img src="docs/overview.svg" alt="Cohort has three parts: the open-core engine, the retrieval and review intelligence (the moat), and a separate optional commercial control plane that never holds the only copy of the memory." width="100%">
+  <img src="docs/overview.svg" alt="Cohort has two parts: the engine (the cohort-mcp server, its tools, the write gate, and the CLI) and the retrieval and review intelligence that makes up the moat. Both run fully on your own machine with no hosted service." width="100%">
 </p>
 
 The vault, the engine, and the moat are free and open under Apache-2.0 and run
-fully on your own machine. A separate, optional commercial control plane adds a
-hosted review and audit dashboard; it reads the vault but never holds the only
-copy, and no open-core component depends on it. The line is documented and
-enforced by a test. See [the open-core boundary](docs/OPEN-CORE.md).
+fully on your own machine. Cohort runs entirely against your own GitHub repo:
+the maintainers never receive your vault, your sessions, or any telemetry.
+Cohort reads and writes your vault locally, under your control, with a human
+approving every write, and that processing happens on your machine, not ours.
 
 ## The engine
 
@@ -97,12 +97,8 @@ and read but never promote or retire a record:
 | `cohort stats` | Report record counts, writebacks, stale records, and current load size. |
 | `cohort bridge` / `reabsorb` | Generate AGENTS.md, CLAUDE.md, Cursor rules, and fold hand-edits back as gated proposals. |
 | `cohort export` / `import` | Move a whole vault losslessly on a portable schema. |
-| `cohort access` | Evaluate multi-vault, per-path access (least-privilege, fail-closed). |
-| `cohort encrypt-setup` / `encrypt-check` | Wire git-crypt or age at-rest encryption and verify key hygiene. |
-| `cohort recover` / `retention` | Recover a removed record from git history; report the retention window. |
 
-The engine and CLI live in [`cohort-mcp/`](cohort-mcp/); the commercial control
-plane lives in [`control-plane/`](control-plane/).
+The engine and CLI live in [`cohort-mcp/`](cohort-mcp/).
 
 ## Quickstart
 
@@ -171,14 +167,15 @@ Register the MCP engine with one command: `cohort init --vault <dir> --agent <id
 
 ## Roadmap
 
-All six phases are built, tested, and merged.
+Phases 1 to 5 are built, tested, and shipped on `main`. They are the whole
+product: the vault, the engine, and the moat, all running on your own machine.
 
 - [x] **Phase 1: Walking skeleton.** Policy engine, record schema, git transport, write gate, and the first four tools.
 - [x] **Phase 2: Trust and safety spine.** Trust tiers, human-only verification, the adversarial suite.
 - [x] **Phase 3: Session capture and search.** Turn session notes into gated drafts; search the vault.
 - [x] **Phase 4: Adoption bridge.** Generate and reabsorb AGENTS.md / CLAUDE.md / Cursor rules; portable export and import.
 - [x] **Phase 5: The moat.** Git-native index, token-budgeted verified-first retrieval, contradiction detection, staleness and supersession, deterministic merge, and `cohort_why`.
-- [x] **Phase 6: Enterprise.** Open-core boundary, multi-vault access, at-rest encryption, retention and recovery, and the SSO-gated control-plane dashboard.
+- [ ] **Phase 6: Enterprise (in progress, parked).** A review and audit dashboard with SSO, plus multi-vault access, at-rest encryption, and retention. It is intentionally **not** part of the released product and is kept on the [`phase-6-control-plane`](https://github.com/magnusmage/cohort/tree/phase-6-control-plane) branch. If released later, the dashboard will be optional and run on your own infrastructure with its own privacy statement; the maintainers still never receive your data.
 
 The full plan lives in [docs/planning](docs/planning/).
 
@@ -191,7 +188,8 @@ change. Stored memory and the model are untrusted; only approved, scanned writes
 land; loaded memory is fenced as data, never instructions; a contradicting fact
 is held for a human instead of overriding a verified one; and the server is the
 only component that ever commits. There is no telemetry and no network call
-beyond your own git remote.
+beyond your own git remote, so the maintainers never receive your vault, your
+sessions, or anything else.
 
 See the [security model](docs/SECURITY.md) for the threat model, the redaction
 rules, and the consent model. Found a vulnerability? Please report it privately
@@ -203,7 +201,6 @@ public issue.
 - [Cohort, explained](docs/EXPLAINED.md): the loop, every command, the consent choices, the security model in one page
 - [The spec](docs/TECHNICAL.md): architecture, vault schema, connector contract
 - [The security model](docs/SECURITY.md): threat model, redaction rules, consent model
-- [The open-core boundary](docs/OPEN-CORE.md): what stays free and open, and the rule that keeps it that way
 - [Ten-minute walkthrough](docs/QUICKSTART.md)
 - [Who it is for](docs/USE-CASES.md) and [honest limits](docs/LIMITATIONS.md)
 - [Decision records](docs/decisions/) and [release history](CHANGELOG.md)
@@ -211,8 +208,7 @@ public issue.
 ## Repository layout
 
 ```
-├── cohort-mcp/          The MCP server and CLI: the open-core engine and the moat
-├── control-plane/       The commercial control plane: read-only, SSO-gated dashboard
+├── cohort-mcp/          The MCP server and CLI: the engine and the moat
 ├── connectors/          Kimi, ZCode, and Claude connectors (Agent Skills standard)
 ├── vault-template/      Blank vault scaffold (copied into your own repo)
 ├── example-vault/       Synthetic demo vault (CC0, all content fictional)
