@@ -62,6 +62,8 @@
     "dist/staleness.d.ts",
     "dist/supersede.js",
     "dist/supersede.d.ts",
+    "dist/merge.js",
+    "dist/merge.d.ts",
     "README.md"
   ],
   "engines": {

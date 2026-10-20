@@ -7,6 +7,7 @@ import picomatch from "picomatch";
 import { type Contradiction, detectContradiction } from "./contradiction.js";
 import { type PrOpener, landWrite } from "./git.js";
 import { lintForInjection } from "./lint.js";
+import { classifyAgainstExisting } from "./merge.js";
 import { HARD_NEVER_CLASSES, type LoadedPolicy, resolveEffective } from "./policy.js";
 import { type VaultRecord, serializeRecord } from "./record.js";
 import type { SecretScanner } from "./scan.js";
@@ -21,6 +22,7 @@ import type { SecretScanner } from "./scan.js";
  *   3. secret-scan   scan the content; a missing scanner or any finding rejects
  *   4. instruction-lint  flagged content can never auto-land
  *   4b. contradiction  a fact that negates a verified fact can never auto-land
+ *   4c. merge        dedup an existing record; never overwrite an occupied path
  *   5. classify      the declared class is a hint, never an authorization
  *   6. decide        resolve the effective policy for the server-set identity
  *   7. land          auto commits or opens a PR; ask returns a pending handle;
@@ -54,7 +56,9 @@ export interface GateDeps {
 export type GateDecision =
   | { decision: "rejected"; reason: string }
   | { decision: "landed"; mode: "direct_commit" | "pull_request"; commit: string; branch: string; prUrl?: string }
-  | { decision: "pending"; handle: string; reason: string };
+  | { decision: "pending"; handle: string; reason: string }
+  | { decision: "duplicate"; reason: string }
+  | { decision: "conflict"; reason: string };
 
 export function matchesAny(globs: string[], relPath: string): boolean {
   if (globs.length === 0) return false;
@@ -143,6 +147,17 @@ export async function runGate(
   let contradiction: Contradiction = { conflict: false };
   if (proposal.record.meta.kind === "fact" && deps.verifiedFacts) {
     contradiction = detectContradiction(proposal.record, await deps.verifiedFacts());
+  }
+
+  // 4c. merge check. Content-addressed records dedup at the same path; a path
+  // already occupied is never overwritten, so a re-proposal cannot clobber a
+  // verified record and a real collision is surfaced for a human.
+  const merge = await classifyAgainstExisting(root, rel, proposal.record);
+  if (merge.kind === "duplicate") {
+    return { decision: "duplicate", reason: `an identical record already exists (status: ${merge.existingStatus}); skipped` };
+  }
+  if (merge.kind === "conflict") {
+    return { decision: "conflict", reason: `write conflict: ${merge.reason}` };
   }
 
   // 5 and 6. classify (declared class is a hint) and decide.
