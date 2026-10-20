@@ -32,16 +32,18 @@ Documentation is licensed CC BY 4.0 (see `docs/LICENSE.md`).
 
 ## What may be commercial (the control plane)
 
-A commercial control plane may be offered as a separate, optional layer. It is
-not in this repository and it is not under this license. It would cover:
+A commercial control plane is offered as a separate, optional layer. Its
+reference implementation lives in `control-plane/` as its own package, clearly
+outside the open-core packages. It covers:
 
 - A hosted review and audit dashboard.
 - Single sign-on and identity for that dashboard.
 - Multi-tenant hosting and administration.
 
 The control plane reads a team's vault to present review and audit; it never
-holds the only copy of the memory, and a team can stop using it at any time with
-their full vault intact in their own git.
+writes to the vault, never holds the only copy of the memory, and a team can
+stop using it at any time with their full vault intact in their own git. It
+depends on the open-core artifacts; the open-core packages never depend on it.
 
 ## The rule
 

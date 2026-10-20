@@ -1,0 +1,41 @@
+name: control-plane
+
+# Build, lint, test, and audit the control-plane package. Runs only when the
+# package or this workflow changes. The control plane is the commercial layer;
+# it depends on the open-core artifacts and is covered by its own gate here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "control-plane/**"
+      - ".github/workflows/control-plane.yml"
+  pull_request:
+    paths:
+      - "control-plane/**"
+      - ".github/workflows/control-plane.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, lint, test, audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane
+    steps:
+      # Pinned to the v4.2.2 commit SHA (supply chain, SECURITY.md T6).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # Pinned to the v7.1.0 commit SHA (supply chain, SECURITY.md T6).
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: control-plane/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - run: npm run audit
