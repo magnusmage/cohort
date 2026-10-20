@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFile, writeFile } from "node:fs/promises";
 import process from "node:process";
 
 import {
@@ -9,6 +10,7 @@ import {
   writeDesktopConfig,
 } from "./init.js";
 import { generateBridge } from "./bridge.js";
+import { exportVault, importVault, parsePortable, serializePortable } from "./portable.js";
 import { loadPolicy } from "./policy.js";
 import { reabsorbFile } from "./reabsorb.js";
 import { computeStats } from "./stats.js";
@@ -32,6 +34,8 @@ const USAGE = [
   "  cohort stats --vault <dir> [--agent <id>]",
   "  cohort bridge --vault <dir> [--include-quarantined]",
   "  cohort reabsorb --vault <dir> --file <name> [--agent <id>]",
+  "  cohort export --vault <dir> [--out <file>]",
+  "  cohort import --vault <dir> --in <file>",
 ].join("\n");
 
 interface InitFlags {
@@ -182,6 +186,45 @@ async function runReabsorb(args: string[]): Promise<void> {
   }
 }
 
+async function runExport(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let out: string | undefined;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--out") out = args[(i += 1)];
+  }
+  if (!vaultDir) {
+    process.stderr.write(`cohort export: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const pv = await exportVault(vaultDir);
+  const json = serializePortable(pv);
+  if (out) {
+    await writeFile(out, json, "utf8");
+    process.stdout.write(`exported ${pv.records.length} record(s) to ${out}\n`);
+  } else {
+    process.stdout.write(json);
+  }
+}
+
+async function runImport(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let inFile: string | undefined;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--in") inFile = args[(i += 1)];
+  }
+  if (!vaultDir || !inFile) {
+    process.stderr.write(`cohort import: --vault and --in are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const pv = parsePortable(await readFile(inFile, "utf8"));
+  const written = await importVault(vaultDir, pv);
+  process.stdout.write(`imported ${written.length} record(s); review and commit them\n`);
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
@@ -189,6 +232,8 @@ async function main(): Promise<void> {
   else if (command === "stats") await runStats(rest);
   else if (command === "bridge") await runBridge(rest);
   else if (command === "reabsorb") await runReabsorb(rest);
+  else if (command === "export") await runExport(rest);
+  else if (command === "import") await runImport(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);
