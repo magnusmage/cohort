@@ -9,6 +9,7 @@ import {
   serverEntry,
   writeDesktopConfig,
 } from "./init.js";
+import { loadAccess, resolveAccess } from "./access.js";
 import { generateBridge } from "./bridge.js";
 import { buildIndex, indexStatus, writeIndex } from "./indexer.js";
 import { exportVault, importVault, parsePortable, serializePortable } from "./portable.js";
@@ -40,6 +41,7 @@ const USAGE = [
   "  cohort reabsorb --vault <dir> --file <name> [--agent <id>]",
   "  cohort export --vault <dir> [--out <file>]",
   "  cohort import --vault <dir> --in <file>",
+  "  cohort access --config <file> --vault <id> --path <p> [--agent <id>] [--write]",
 ].join("\n");
 
 interface InitFlags {
@@ -280,6 +282,31 @@ async function runImport(args: string[]): Promise<void> {
   process.stdout.write(`imported ${written.length} record(s); review and commit them\n`);
 }
 
+async function runAccess(args: string[]): Promise<void> {
+  let config: string | undefined;
+  let vaultId: string | undefined;
+  let path: string | undefined;
+  let agentId: string | null = null;
+  let write = false;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--config") config = args[(i += 1)];
+    else if (arg === "--vault") vaultId = args[(i += 1)];
+    else if (arg === "--path") path = args[(i += 1)];
+    else if (arg === "--agent") agentId = args[(i += 1)] ?? null;
+    else if (arg === "--write") write = true;
+  }
+  if (!config || !vaultId || !path) {
+    process.stderr.write(`cohort access: --config, --vault, and --path are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const { config: cfg, degraded, reason } = await loadAccess(config);
+  if (degraded) process.stderr.write(`access config unreadable; failing closed to deny-all: ${reason ?? ""}\n`);
+  const decision = resolveAccess(cfg, { vaultId, agentId, path, write });
+  process.stdout.write(`${decision.allowed ? "allow" : "deny"} ${write ? "write" : "read"} ${vaultId}:${path} - ${decision.reason}\n`);
+  process.exit(decision.allowed ? 0 : 1);
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
@@ -291,6 +318,7 @@ async function main(): Promise<void> {
   else if (command === "reabsorb") await runReabsorb(rest);
   else if (command === "export") await runExport(rest);
   else if (command === "import") await runImport(rest);
+  else if (command === "access") await runAccess(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);

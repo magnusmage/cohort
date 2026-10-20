@@ -66,6 +66,8 @@
     "dist/merge.d.ts",
     "dist/why.js",
     "dist/why.d.ts",
+    "dist/access.js",
+    "dist/access.d.ts",
     "README.md"
   ],
   "engines": {
