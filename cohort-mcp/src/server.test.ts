@@ -49,6 +49,11 @@ const SAMPLE_STATUS: StatusView = {
     items: [{ id: "f-000000000000", kind: "fact", preview: "a quarantined fact" }],
     note: "these records await human verification; promote them with cohort verify",
   },
+  stale: {
+    count: 0,
+    items: [],
+    note: "these records are past their review_by horizon; review them and re-verify or supersede",
+  },
 };
 
 const SAMPLE_LOAD: LoadResult = {

@@ -1,6 +1,7 @@
 import { listTracked, readVaultFile } from "./git.js";
 import { type EffectivePolicy, type LoadedPolicy, loadPolicy, resolveEffective } from "./policy.js";
 import { parseRecord } from "./record.js";
+import { isStale } from "./staleness.js";
 
 /**
  * cohort_status: a read-only snapshot of the vault and policy state.
@@ -27,6 +28,7 @@ export interface StatusView {
   };
   pending: { tracked: boolean; items: string[] };
   quarantine: { count: number; items: Array<{ id: string; kind: string; preview: string }>; note: string };
+  stale: { count: number; items: Array<{ id: string; kind: string; review_by: string }>; note: string };
 }
 
 const QUEUE_LIMIT = 50;
@@ -42,6 +44,7 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
   const byStatus = { proposed: 0, quarantined: 0, verified: 0, superseded: 0 };
   let unreadable = 0;
   const queue: Array<{ id: string; kind: string; preview: string }> = [];
+  const staleItems: Array<{ id: string; kind: string; review_by: string }> = [];
 
   const tracked = await listTracked(root, ".");
   const files = tracked.filter((f) => f.endsWith(".md") && RECORD_DIRS.some((d) => f.startsWith(`${d}/`)));
@@ -52,6 +55,10 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
       byStatus[record.meta.status] += 1;
       if (record.meta.status === "quarantined" && queue.length < QUEUE_LIMIT) {
         queue.push({ id: record.meta.id, kind: record.meta.kind, preview: preview(record.text) });
+      }
+      // A stale record is overdue for review. It is surfaced, never dropped or trusted less automatically.
+      if (record.meta.status !== "superseded" && isStale(record.meta) && record.meta.review_by && staleItems.length < QUEUE_LIMIT) {
+        staleItems.push({ id: record.meta.id, kind: record.meta.kind, review_by: record.meta.review_by });
       }
     } catch {
       unreadable += 1;
@@ -69,6 +76,11 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
       count: byStatus.quarantined,
       items: queue,
       note: "these records await human verification; promote them with cohort verify",
+    },
+    stale: {
+      count: staleItems.length,
+      items: staleItems,
+      note: "these records are past their review_by horizon; review them and re-verify or supersede",
     },
   };
   if (loaded.reason !== undefined) view.reason = loaded.reason;
