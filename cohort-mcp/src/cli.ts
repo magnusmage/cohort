@@ -8,6 +8,8 @@ import {
   serverEntry,
   writeDesktopConfig,
 } from "./init.js";
+import { loadPolicy } from "./policy.js";
+import { computeStats } from "./stats.js";
 import { verifyRecords } from "./verify.js";
 
 /**
@@ -25,6 +27,7 @@ const USAGE = [
   "  cohort init --vault <dir> --agent <id> [--scope user|project] [--desktop-config <path>]",
   "              [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]",
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
+  "  cohort stats --vault <dir> [--agent <id>]",
 ].join("\n");
 
 interface InitFlags {
@@ -109,10 +112,40 @@ async function runVerify(args: string[]): Promise<void> {
   process.exit(results.some((r) => r.status === "error") ? 1 : 0);
 }
 
+async function runStats(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let agentId: string | null = null;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--agent") agentId = args[(i += 1)] ?? null;
+  }
+  if (!vaultDir) {
+    process.stderr.write(`cohort stats: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const loaded = await loadPolicy(vaultDir);
+  const s = await computeStats(vaultDir, loaded, agentId);
+  const k = s.records.byKind;
+  const st = s.records.byStatus;
+  process.stdout.write(
+    [
+      `records: ${s.records.total} (fact ${k.fact}, decision ${k.decision}, thread ${k.thread})`,
+      `status: verified ${st.verified}, quarantined ${st.quarantined}, proposed ${st.proposed}, superseded ${st.superseded}`,
+      `writebacks: ${s.writebacks.recordCommits} commit(s) by ${s.writebacks.contributors} contributor(s)`,
+      `current load: ~${s.currentLoad.approxTokens} tokens`,
+      `not tracked: ${s.notTracked.join(", ")}`,
+      s.note,
+      "",
+    ].join("\n"),
+  );
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
   else if (command === "verify") await runVerify(rest);
+  else if (command === "stats") await runStats(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);
