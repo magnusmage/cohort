@@ -1,15 +1,9 @@
 import { z } from "zod";
 
 /**
- * Phase 1 tool input schemas and the shared stub marker.
- *
- * These are registration stubs. The real behaviour for each tool lands in later
- * Phase 1 tickets (the git transport, the policy loader, the write gate, and the
- * load and propose tools). Keeping the schemas here means the handlers in
- * server.ts stay a thin wiring layer.
+ * Phase 1 tool input schemas. Keeping them here means the handlers in server.ts
+ * stay a thin wiring layer over the load, propose, status, and policy modules.
  */
-
-export const TOOL_NOT_IMPLEMENTED = "is not implemented yet (Phase 1 scaffold).";
 
 /** cohort_load: bounded, fenced context from the vault. */
 export const loadInput = {

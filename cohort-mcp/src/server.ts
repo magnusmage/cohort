@@ -5,13 +5,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type LoadResult, defaultLoadContext } from "./load.js";
 import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
 import { type ProposeItem, type ProposeItemResult, defaultPropose } from "./propose.js";
-import {
-  TOOL_NOT_IMPLEMENTED,
-  loadInput,
-  policyGetInput,
-  proposeInput,
-  statusInput,
-} from "./tools.js";
+import { type StatusView, defaultStatus } from "./status.js";
+import { loadInput, policyGetInput, proposeInput, statusInput } from "./tools.js";
 
 export const SERVER_NAME = "cohort-mcp";
 export const SERVER_VERSION = "0.1.0";
@@ -33,6 +28,9 @@ export type ContextProvider = (args: { topics?: string[]; scope?: string }) => P
 /** Runs proposed items through the write gate and returns a per-item decision. */
 export type ProposeRunner = (items: ProposeItem[]) => Promise<ProposeItemResult[]>;
 
+/** Returns a read-only snapshot of the vault and policy state. */
+export type StatusProvider = () => Promise<StatusView>;
+
 export interface ServerOptions {
   /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
   policyProvider?: PolicyProvider;
@@ -40,13 +38,8 @@ export interface ServerOptions {
   contextProvider?: ContextProvider;
   /** Runs proposals through the gate for cohort_propose. Injectable for tests. */
   proposeRunner?: ProposeRunner;
-}
-
-function notImplemented(tool: string) {
-  return {
-    isError: true,
-    content: [{ type: "text" as const, text: `${tool} ${TOOL_NOT_IMPLEMENTED}` }],
-  };
+  /** Supplies the status snapshot for cohort_status. Injectable for tests. */
+  statusProvider?: StatusProvider;
 }
 
 function textResult(text: string) {
@@ -54,11 +47,11 @@ function textResult(text: string) {
 }
 
 /**
- * Build the Cohort MCP server.
+ * Build the Cohort MCP server with the four Phase 1 tools implemented.
  *
- * cohort_policy_get is implemented and read-only: it returns the effective
- * policy for the server-established agent identity and exposes no path to
- * write policy.yml. The other three tools are stubs until their tickets.
+ * Every tool is read-only except cohort_propose, which only ever goes through
+ * the server-enforced write gate. There is no tool that writes policy.yml and
+ * none that approves a pending proposal; approval is out of band.
  */
 export function createServer(options: ServerOptions = {}): McpServer {
   const policyProvider: PolicyProvider =
@@ -67,6 +60,8 @@ export function createServer(options: ServerOptions = {}): McpServer {
     options.contextProvider ?? ((args) => defaultLoadContext(process.env, process.cwd(), args));
   const proposeRunner: ProposeRunner =
     options.proposeRunner ?? ((items) => defaultPropose(process.env, process.cwd(), items));
+  const statusProvider: StatusProvider =
+    options.statusProvider ?? (() => defaultStatus(process.env, process.cwd()));
 
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
@@ -101,10 +96,13 @@ export function createServer(options: ServerOptions = {}): McpServer {
     "cohort_status",
     {
       title: "Vault and policy status",
-      description: "Report the effective policy summary and pending state. Stub in the scaffold.",
+      description: "Report the effective policy summary and record counts from the vault.",
       inputSchema: statusInput,
     },
-    async () => notImplemented("cohort_status"),
+    async () => {
+      const view = await statusProvider();
+      return textResult(JSON.stringify(view, null, 2));
+    },
   );
 
   server.registerTool(

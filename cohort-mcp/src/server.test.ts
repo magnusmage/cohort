@@ -8,8 +8,7 @@ import type { LoadResult } from "./load.js";
 import type { EffectivePolicyView } from "./policy.js";
 import type { ProposeItemResult } from "./propose.js";
 import { PHASE1_TOOLS, type ServerOptions, createServer } from "./server.js";
-
-const STUB_TOOLS = ["cohort_status"] as const;
+import type { StatusView } from "./status.js";
 
 const SAMPLE_VIEW: EffectivePolicyView = {
   agent: "claude-code@alice",
@@ -29,13 +28,23 @@ async function connectClient(options: ServerOptions = {}): Promise<Client> {
   return client;
 }
 
-const VALID_ARGS: Record<(typeof STUB_TOOLS)[number], Record<string, unknown>> = {
-  cohort_status: {},
-};
-
 const SAMPLE_PROPOSE: ProposeItemResult[] = [
   { index: 0, kind: "fact", id: "f-000000000000", decision: "pending", handle: "abcd", reason: "held for human approval" },
 ];
+
+const SAMPLE_STATUS: StatusView = {
+  agent: "claude-code@alice",
+  degraded: false,
+  defaults: { load: "ask", propose: "ask", on_write: "pull_request" },
+  effective: { load: "auto", propose: "ask", on_write: "pull_request" },
+  counts: {
+    byKind: { fact: 2, decision: 1, thread: 0 },
+    byStatus: { proposed: 0, quarantined: 3, verified: 0, superseded: 0 },
+    unreadable: 0,
+  },
+  pending: { tracked: false, items: [] },
+  quarantine: { count: 3, note: "promotion via cohort_verify arrives in Phase 2" },
+};
 
 const SAMPLE_LOAD: LoadResult = {
   text: "**Shared team context from the Cohort vault** (last synced 00:00).\n(fenced)",
@@ -51,14 +60,13 @@ test("registers exactly the four Phase 1 tools", async () => {
   assert.deepEqual(names, [...PHASE1_TOOLS].sort());
 });
 
-test("the remaining stub reports not implemented", async () => {
-  const client = await connectClient();
-  for (const name of STUB_TOOLS) {
-    const result = await client.callTool({ name, arguments: VALID_ARGS[name] });
-    assert.equal(result.isError, true, `${name} should be an error stub`);
-    const content = result.content as Array<{ type: string; text?: string }>;
-    assert.match(content[0]?.text ?? "", /not implemented/i, `${name} should say not implemented`);
-  }
+test("cohort_status returns the snapshot from the provider", async () => {
+  const client = await connectClient({ statusProvider: async () => SAMPLE_STATUS });
+  const result = await client.callTool({ name: "cohort_status", arguments: {} });
+  assert.notEqual(result.isError, true, "cohort_status must not be an error");
+  const content = result.content as Array<{ type: string; text?: string }>;
+  const view = JSON.parse(content[0]?.text ?? "{}") as StatusView;
+  assert.deepEqual(view, SAMPLE_STATUS);
 });
 
 test("cohort_propose returns per-item gate decisions from the runner", async () => {
