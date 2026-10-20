@@ -7,6 +7,32 @@ project policy.
 
 ### Added
 
+- Phases 2 through 6 of the `cohort-mcp` server, built on the Phase 1 engine:
+  - Phase 2, the trust and safety spine: trust tiers with human-only
+    verification (`cohort verify`), verified-first loading, and an adversarial
+    test suite.
+  - Phase 3: session capture that turns session notes into classified draft
+    records through the gate, and `cohort_search` across the vault.
+  - Phase 4, the adoption bridge: `cohort bridge` generates AGENTS.md,
+    CLAUDE.md, and Cursor rules from verified records, `cohort reabsorb` folds
+    hand-edits to those files back in as gated proposals, and `cohort export`
+    / `import` move a whole vault losslessly on a portable schema.
+  - Phase 5, the moat: a committed, diffable git-native retrieval index
+    (`cohort index`), token-budgeted verified-first retrieval, contradiction
+    detection in the write gate, staleness and supersession with decay
+    (`cohort supersede`), deterministic merge with conflict surfacing, and
+    `cohort_why` provenance forensics read from git.
+  - Phase 6, enterprise: a documented and test-enforced open-core boundary,
+    fine-grained multi-vault access (`cohort access`, least-privilege and
+    fail-closed), at-rest encryption via git-crypt or age with key hygiene
+    checks (`cohort encrypt-setup` / `encrypt-check`), and retention and
+    recovery of removed records from git history (`cohort recover` /
+    `retention`).
+- The `control-plane/` package: a separate, optional commercial layer with a
+  read-only review and audit dashboard, gated by single sign-on and
+  fail-closed. It reads the vault but never writes to it and never holds the
+  only copy of the memory; the open-core packages never depend on it, enforced
+  by a test, and it has its own CI workflow.
 - Phase 1 of the `cohort-mcp` server: a local stdio MCP server, the
   client-neutral engine, with four tools: `cohort_load` (bounded, fenced
   context), `cohort_propose` (records through a server-enforced write gate),
@@ -48,6 +74,11 @@ project policy.
   ZCode alongside Kimi: the client table, the how-you-start-it table,
   install steps, the developers path, daily use, and the connector-count
   limitation.
+- The root README is refreshed for the completed roadmap: a new hero banner,
+  a system-at-a-glance diagram, and a terminal demo (`docs/hero.svg`,
+  `docs/overview.svg`, `docs/demo.svg`); the engine's six tools and the CLI
+  commands; a collapsible quickstart; and a roadmap that marks all six phases
+  shipped. The stale "Phase 1, in progress" framing is removed.
 
 ### Fixed
 
