@@ -182,6 +182,7 @@ and seeds a starter `.cohort/policy.yml`. The plan and tickets are in
 - [Cohort, explained](docs/EXPLAINED.md): the loop, every command, the consent choices, the security model in one page
 - [The spec](docs/TECHNICAL.md): architecture, vault schema, connector contract
 - [The security model](docs/SECURITY.md): threat model, redaction rules, consent model
+- [The open-core boundary](docs/OPEN-CORE.md): what stays free and open, and the rule that keeps it that way
 - [Ten-minute walkthrough](docs/QUICKSTART.md)
 - [Who it is for](docs/USE-CASES.md) and [honest limits](docs/LIMITATIONS.md)
 - [Decision records](docs/decisions/) and [release history](CHANGELOG.md)
