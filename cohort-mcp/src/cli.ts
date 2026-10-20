@@ -10,6 +10,7 @@ import {
 } from "./init.js";
 import { generateBridge } from "./bridge.js";
 import { loadPolicy } from "./policy.js";
+import { reabsorbFile } from "./reabsorb.js";
 import { computeStats } from "./stats.js";
 import { verifyRecords } from "./verify.js";
 
@@ -30,6 +31,7 @@ const USAGE = [
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
   "  cohort stats --vault <dir> [--agent <id>]",
   "  cohort bridge --vault <dir> [--include-quarantined]",
+  "  cohort reabsorb --vault <dir> --file <name> [--agent <id>]",
 ].join("\n");
 
 interface InitFlags {
@@ -159,12 +161,34 @@ async function runBridge(args: string[]): Promise<void> {
   for (const path of written) process.stdout.write(`generated ${path}\n`);
 }
 
+async function runReabsorb(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let file: string | undefined;
+  let agentId: string | null = null;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--file") file = args[(i += 1)];
+    else if (arg === "--agent") agentId = args[(i += 1)] ?? null;
+  }
+  if (!vaultDir || !file) {
+    process.stderr.write(`cohort reabsorb: --vault and --file are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const { newItems, results } = await reabsorbFile(vaultDir, file, agentId);
+  process.stdout.write(`${newItems.length} new item(s) from ${file}\n`);
+  for (const r of results) {
+    process.stdout.write(`${r.kind} ${r.id}: ${r.decision}${r.reason ? ` (${r.reason})` : ""}\n`);
+  }
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
   else if (command === "verify") await runVerify(rest);
   else if (command === "stats") await runStats(rest);
   else if (command === "bridge") await runBridge(rest);
+  else if (command === "reabsorb") await runReabsorb(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);

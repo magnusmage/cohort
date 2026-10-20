@@ -50,6 +50,8 @@
     "dist/stats.d.ts",
     "dist/bridge.js",
     "dist/bridge.d.ts",
+    "dist/reabsorb.js",
+    "dist/reabsorb.d.ts",
     "README.md"
   ],
   "engines": {
