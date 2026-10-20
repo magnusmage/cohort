@@ -33,6 +33,8 @@
     "dist/load.d.ts",
     "dist/propose.js",
     "dist/propose.d.ts",
+    "dist/status.js",
+    "dist/status.d.ts",
     "README.md"
   ],
   "engines": {
