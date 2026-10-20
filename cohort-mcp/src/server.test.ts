@@ -56,6 +56,8 @@ const SAMPLE_LOAD: LoadResult = {
   included: 1,
   withheld: 0,
   loadMode: "ask",
+  approxTokens: 10,
+  budget: 8000,
 };
 
 test("registers the Phase 1 tools plus cohort_search", async () => {
