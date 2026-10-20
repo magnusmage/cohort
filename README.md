@@ -7,7 +7,7 @@
 
 > Shared context for AI chatbots. One markdown vault on GitHub. Every teammate's AI, regardless of account, plan, or platform, reads and writes the same memory.
 
-![Cohort architecture: teammates' AI clients load bounded context from the shared vault repo, and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request. No servers exist.](docs/architecture.svg)
+![Cohort architecture: teammates' AI clients load bounded context from the shared vault repo, and propose writebacks back through a local redaction gate, human approval, and a review-gated pull request. No hosted server; the repo is the only shared place.](docs/architecture.svg)
 
 ---
 
@@ -26,7 +26,7 @@
 
 ## What it is
 
-Cohort gives a team shared memory for their AI chatbots. One git repository holds the team's facts, decisions, and open threads in plain markdown. Each teammate's AI reads a bounded slice at session start and proposes updates at session end, and a human approves every change before it lands. There are no servers and no accounts with us: the repo is the product, and it lives in your GitHub.
+Cohort gives a team shared memory for their AI chatbots. One git repository holds the team's facts, decisions, and open threads in plain markdown. Each teammate's AI reads a bounded slice at session start and proposes updates at session end, and a human approves every change before it lands. There is no hosted server and no account with us: the repo is the product, and it lives in your GitHub. The Phase 1 `cohort-mcp` server is a local process on your own machine, not a hosted service.
 
 ## Current status (v0.3.0, October 2026)
 
@@ -162,6 +162,20 @@ the consent model.
 
 Found a vulnerability? Please report it privately through GitHub's private
 vulnerability reporting on this repository, not as a public issue.
+
+## The cohort-mcp server (Phase 1, in progress)
+
+Cohort is growing a client-neutral engine: `cohort-mcp`, a local stdio Model
+Context Protocol server that any MCP client can run. It loads bounded, fenced
+context and runs human-approved writebacks through a server-enforced policy
+gate: consent via `policy.yml`, secret and PII scanning, and read-time
+data-fencing. It is built and verified on Claude first.
+
+It lives in [`cohort-mcp/`](cohort-mcp/) and is wired with one command,
+`cohort init`, which registers the server with Claude Code and Claude Desktop
+and seeds a starter `.cohort/policy.yml`. The plan and tickets are in
+[`docs/planning/`](docs/planning/), tracked in the
+[Phase 1 epic](https://github.com/magnusmage/cohort/issues/38).
 
 ## Where to read more
 

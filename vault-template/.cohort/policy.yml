@@ -1,0 +1,17 @@
+defaults:
+  load: ask
+  propose: ask
+  on_write: pull_request
+
+classes:
+  coding-convention: { propose: auto }
+  architecture-decision: { propose: ask }
+  secret-or-credential: { propose: never }
+  customer-pii: { propose: never }
+
+paths:
+  readable: ["facts/**", "decisions/**", "threads/**"]
+  writable: ["facts/**", "decisions/**", "threads/**"]
+  deny: ["**/.env", "**/*secret*", "private/**"]
+
+agents: {}

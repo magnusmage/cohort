@@ -7,6 +7,17 @@ project policy.
 
 ### Added
 
+- Phase 1 of the `cohort-mcp` server: a local stdio MCP server, the
+  client-neutral engine, with four tools: `cohort_load` (bounded, fenced
+  context), `cohort_propose` (records through a server-enforced write gate),
+  `cohort_status`, and `cohort_policy_get` (read-only). It includes the policy
+  engine (`policy.yml`, fail-closed, server-established identity, hard
+  never-classes), the record schema with content-addressed ids and provenance,
+  the git transport (argv-only, DCO sign-off), the write gate (deny-check,
+  secret and PII scan, instruction linter, decide, land), and `cohort init` for
+  one-command Claude wiring. A new CI workflow builds, lints, tests, and audits
+  the package. `vault-template/` now seeds `.cohort/policy.yml` and the
+  `facts/`, `decisions/`, `threads/` record directories.
 - Claude connector (`connectors/claude/SKILL.md`), mirroring the Kimi
   connector per the connector spec (TECHNICAL.md §6): same consent-first
   activation, bootstrap flow, LOAD/PROPOSE lifecycle, redaction gate, and
