@@ -78,6 +78,7 @@ cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.m
 cohort reabsorb --vault <dir> --file <name>       # reabsorb hand-edits to a generated file as gated proposals
 cohort export --vault <dir> --out <file>          # export the whole vault to a portable JSON document
 cohort import --vault <dir> --in <file>           # import records from a portable document (writes, you commit)
+cohort access --config <file> --vault <id> --path <p>  # evaluate multi-vault access (least privilege, fail-closed)
 ```
 
 `verify` and `supersede` are CLI commands rather than tools so the model can
@@ -132,7 +133,11 @@ a poisoned fact cannot quietly override verified memory. Records are
 content-addressed, so concurrent writebacks of the same fact dedup to one path
 and distinct facts never collide; a path that is already occupied is never
 overwritten, so a re-proposal cannot clobber a verified record, and a real
-collision is surfaced for a human. It makes no network calls
+collision is surfaced for a human. Across several vaults, `cohort access`
+resolves a per-vault, per-path decision that is least-privilege and fail-closed:
+nothing is permitted without an explicit grant, an unknown vault or agent is
+denied, a vault-wide deny overrides any grant, and a missing or invalid access
+document denies everything. It makes no network calls
 beyond the user's own git remote and no telemetry. The runtime dependency
 surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.
