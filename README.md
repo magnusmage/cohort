@@ -94,7 +94,7 @@ and read but never promote or retire a record:
 | `cohort verify` | Promote a record from quarantined to verified (human only). |
 | `cohort supersede` | Mark a record replaced; it leaves load but stays in git history. |
 | `cohort index` | Build the committed, diffable retrieval index (`--check` to verify). |
-| `cohort search` / `stats` | Look across the vault; report counts and load size. |
+| `cohort stats` | Report record counts, writebacks, stale records, and current load size. |
 | `cohort bridge` / `reabsorb` | Generate AGENTS.md, CLAUDE.md, Cursor rules, and fold hand-edits back as gated proposals. |
 | `cohort export` / `import` | Move a whole vault losslessly on a portable schema. |
 | `cohort access` | Evaluate multi-vault, per-path access (least-privilege, fail-closed). |
