@@ -2,6 +2,7 @@
   "name": "cohort-mcp",
   "version": "0.1.0",
   "description": "Cohort MCP server: the client-neutral engine behind the Cohort shared-memory vault.",
+  "mcpName": "io.github.magnusmage/cohort-mcp",
   "license": "Apache-2.0",
   "author": "evdatsion",
   "type": "module",
