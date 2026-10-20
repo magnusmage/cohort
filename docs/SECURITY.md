@@ -126,3 +126,30 @@ structurally incapable of the following:
 Client preferences live in `<vault>/.cohort.local.toml`, which must be
 gitignored by every vault. A connector must refuse to run if it detects this
 file tracked in git, and must fail closed.
+
+## 9. The cohort-mcp server trust boundary
+
+The Phase 1 `cohort-mcp` server is a local stdio process and the only trusted
+component: it is the only thing that commits to the vault. The model, the
+client, stored memory, and a teammate's writeback are all untrusted.
+
+- Server-enforced consent. Approval is enforced by the server against
+  `policy.yml`, never requested of the model. Unknown class, unreadable policy,
+  or ambiguity fails closed (ask or deny, never auto).
+- The write gate. Every proposal passes, in order: path canonicalization
+  (reject traversal, symlink escape, `.cohort/`, `paths.deny`, and anything
+  outside `paths.writable`); hard deny of the secret and PII classes; a secret
+  and PII content scan with the vault's gitleaks rules that fails closed when
+  the scanner is missing; a minimal instruction linter that keeps
+  injection-shaped content from auto-landing; then decide and land.
+- Read-time data-fencing. `cohort_load` wraps returned memory in a
+  treat-as-data envelope whose boundary carries a per-load nonce, so record
+  content cannot forge the boundary and break out.
+- Server-established identity. The agent identity comes from the install-time
+  config, never a model argument, so the per-agent policy dial cannot be forged.
+- No model-callable approval. A pending proposal returns a handle a human
+  approves out of band; no tool approves or verifies on the model's behalf, and
+  no tool writes `policy.yml`.
+- Supply chain. The server pins its dependencies with a committed lockfile, runs
+  `npm audit` in CI, and `cohort init` registers a pinned server version, never
+  latest from npm.

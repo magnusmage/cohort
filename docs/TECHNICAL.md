@@ -17,7 +17,7 @@ chatbots directly.
 | P2 | Git-native | Git is the sync engine, audit log, and conflict-resolution layer. We build zero infrastructure. |
 | P3 | Human-in-the-loop writeback | AIs propose knowledge; humans approve via PR. No autonomous writes to shared memory. |
 | P4 | Platform-agnostic | The vault format contains nothing platform-specific. Connectors adapt platforms to the vault, never the reverse. |
-| P5 | Boring tech | Shell scripts + markdown + git. Any contributor can audit everything. No servers, no vector databases, no build step for v1. |
+| P5 | Boring tech | Markdown + git, with shell for the vault tooling and a small, audited Node build for the local `cohort-mcp` server. Any contributor can audit everything. No hosted server and no vector databases. |
 | P6 | Fail closed | On any doubt (secrets detected, injection suspected, malformed file), the connector refuses to sync and tells the human why. |
 
 ## 3. System architecture

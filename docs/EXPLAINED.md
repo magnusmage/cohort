@@ -58,9 +58,10 @@ vault's gitignored `.cohort.local.toml`, per user, never shared.
 - **Your token stays on your machine.** The GitHub token lives in the
   credential manager only. Never in chat, never in a file, never in
   the vault.
-- **No servers.** Cohort runs no infrastructure and keeps no copy of
-  anyone's data. The only network traffic is git pull and push against
-  your own remote. There is no telemetry.
+- **No hosted server.** Cohort runs no hosted infrastructure and keeps no
+  copy of anyone's data. The `cohort-mcp` server is a local process on your
+  own machine; the only network traffic is git pull and push against your
+  own remote. There is no telemetry.
 
 ## Where the details live
 
