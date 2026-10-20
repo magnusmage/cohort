@@ -7,7 +7,8 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { LoadResult } from "./load.js";
 import type { EffectivePolicyView } from "./policy.js";
 import type { ProposeItemResult } from "./propose.js";
-import { PHASE1_TOOLS, type ServerOptions, createServer } from "./server.js";
+import type { SearchResult } from "./search.js";
+import { TOOLS, type ServerOptions, createServer } from "./server.js";
 import type { StatusView } from "./status.js";
 
 const SAMPLE_VIEW: EffectivePolicyView = {
@@ -57,11 +58,25 @@ const SAMPLE_LOAD: LoadResult = {
   loadMode: "ask",
 };
 
-test("registers exactly the four Phase 1 tools", async () => {
+test("registers the Phase 1 tools plus cohort_search", async () => {
   const client = await connectClient();
   const { tools } = await client.listTools();
   const names = tools.map((t) => t.name).sort();
-  assert.deepEqual(names, [...PHASE1_TOOLS].sort());
+  assert.deepEqual(names, [...TOOLS].sort());
+});
+
+test("cohort_search returns hits from the provider", async () => {
+  const sample: SearchResult = {
+    query: "postgres",
+    count: 1,
+    includeQuarantined: false,
+    hits: [{ id: "f-000000000000", kind: "fact", status: "verified", snippet: "We chose Postgres." }],
+  };
+  const client = await connectClient({ searchProvider: async () => sample });
+  const result = await client.callTool({ name: "cohort_search", arguments: { query: "postgres" } });
+  assert.notEqual(result.isError, true);
+  const content = result.content as Array<{ type: string; text?: string }>;
+  assert.deepEqual(JSON.parse(content[0]?.text ?? "{}"), sample);
 });
 
 test("cohort_status returns the snapshot from the provider", async () => {

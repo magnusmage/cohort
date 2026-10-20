@@ -38,3 +38,12 @@ export const proposeInput = {
 /** cohort_status and cohort_policy_get take no input. */
 export const statusInput = {};
 export const policyGetInput = {};
+
+/** cohort_search: text lookup across the vault. */
+export const searchInput = {
+  query: z.string().min(1).describe("Text to search for across the vault."),
+  include_quarantined: z
+    .boolean()
+    .optional()
+    .describe("Include agent-asserted, unverified records. Default: verified only."),
+};
