@@ -47,3 +47,8 @@ export const searchInput = {
     .optional()
     .describe("Include agent-asserted, unverified records. Default: verified only."),
 };
+
+/** cohort_why: provenance for one record, read from git history. */
+export const whyInput = {
+  id: z.string().min(1).describe("The content-addressed record id to explain, for example f-a1b2c3d4e5f6."),
+};

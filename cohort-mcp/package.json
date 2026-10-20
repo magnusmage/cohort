@@ -64,6 +64,8 @@
     "dist/supersede.d.ts",
     "dist/merge.js",
     "dist/merge.d.ts",
+    "dist/why.js",
+    "dist/why.d.ts",
     "README.md"
   ],
   "engines": {

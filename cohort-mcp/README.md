@@ -36,6 +36,7 @@ After that, the client lists these tools:
 | `cohort_status` | Report the effective policy, record counts, and the quarantine queue. |
 | `cohort_policy_get` | Return the caller's effective, read-only policy limits. |
 | `cohort_search` | Search the vault, honoring readable scope; verified-only by default, with an include_quarantined opt-in. |
+| `cohort_why` | Return a record's provenance (who, which model, when, why) read from git history. Read-only. |
 
 ## CLI
 
