@@ -42,14 +42,24 @@ After that, the client lists these tools:
 Some actions are human-run on the terminal, by design, not callable by the model:
 
 ```sh
-cohort init --vault <dir> --agent <id>         # seed policy, wire Claude, print next steps
-cohort verify --vault <dir> --by <handle> <id> # promote a record from quarantined to verified
-cohort stats --vault <dir>                     # record counts, writebacks, current load size
+cohort init --vault <dir> --agent <id>            # seed policy, wire Claude, print next steps
+cohort verify --vault <dir> --by <handle> <id>    # promote a record from quarantined to verified
+cohort stats --vault <dir>                        # record counts, writebacks, current load size
+cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.md, Cursor rules from the vault
+cohort reabsorb --vault <dir> --file <name>       # reabsorb hand-edits to a generated file as gated proposals
+cohort export --vault <dir> --out <file>          # export the whole vault to a portable JSON document
+cohort import --vault <dir> --in <file>           # import records from a portable document (writes, you commit)
 ```
 
 `verify` is a CLI command rather than a tool so the model can propose and read
 but never promote. Session capture (turning session notes into classified draft
 records) feeds the propose flow; the drafts still pass the gate.
+
+The adoption bridge keeps the files teams already use. `bridge` generates
+AGENTS.md, CLAUDE.md, and Cursor rules from the vault's verified records;
+`reabsorb` turns hand-edits to those files back into gated proposals, so the
+vault stays the source of truth and nothing is written back silently; `export`
+and `import` move a whole vault losslessly on a portable schema.
 
 ## Develop
 
