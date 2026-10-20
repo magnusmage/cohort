@@ -101,7 +101,11 @@ the vault's `policy.yml`, scans every write for secrets and PII, fences loaded
 memory as data not instructions, and only ever commits through the write gate;
 promotion to verified is a human-only CLI action. A proposed fact that negates a
 verified fact on the same topic is held for a human rather than auto-landed, so
-a poisoned fact cannot quietly override verified memory. It makes no network calls
+a poisoned fact cannot quietly override verified memory. Records are
+content-addressed, so concurrent writebacks of the same fact dedup to one path
+and distinct facts never collide; a path that is already occupied is never
+overwritten, so a re-proposal cannot clobber a verified record, and a real
+collision is surfaced for a human. It makes no network calls
 beyond the user's own git remote and no telemetry. The runtime dependency
 surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.

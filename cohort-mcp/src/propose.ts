@@ -29,7 +29,7 @@ export interface ProposeItemResult {
   index: number;
   kind: Kind;
   id: string;
-  decision: "landed" | "pending" | "rejected";
+  decision: "landed" | "pending" | "rejected" | "duplicate" | "conflict";
   mode?: "direct_commit" | "pull_request";
   commit?: string;
   branch?: string;
@@ -52,6 +52,9 @@ function mapDecision(index: number, kind: Kind, id: string, d: GateDecision): Pr
   }
   if (d.decision === "pending") {
     return { index, kind, id, decision: "pending", handle: d.handle, reason: d.reason };
+  }
+  if (d.decision === "duplicate" || d.decision === "conflict") {
+    return { index, kind, id, decision: d.decision, reason: d.reason };
   }
   return { index, kind, id, decision: "rejected", reason: d.reason };
 }
