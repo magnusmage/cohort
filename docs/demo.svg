@@ -1,14 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" role="img" aria-labelledby="t d" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" role="img" aria-labelledby="t d" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace">
   <title id="t">A Cohort session</title>
-  <desc id="d">A terminal session: an AI client loads bounded, verified-first team context under a token budget, a teammate proposes a new fact which is held for human approval as a pull request, and a human verifies the record from the command line.</desc>
+  <desc id="d">An animated terminal session using real cohort CLI output: an AI client loads bounded, verified-first team context under a token budget; a teammate proposes a fact that is held for human approval; a human verifies it from the command line; and cohort stats then shows it counted as verified. The reveal loops.</desc>
   <defs>
     <linearGradient id="term" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#0d1526"/><stop offset="1" stop-color="#0a1120"/>
     </linearGradient>
+    <style>
+      .ln { opacity: 0; }
+      .p1 { animation: p1 16s linear infinite; }
+      .p2 { animation: p2 16s linear infinite; }
+      .p3 { animation: p3 16s linear infinite; }
+      .p4 { animation: p4 16s linear infinite; }
+      .p5 { animation: p5 16s linear infinite; }
+      .cur { animation: blink 1.1s steps(1) infinite; }
+      @keyframes p1 { 0%,1% { opacity:0 } 3%,96% { opacity:1 } 100% { opacity:0 } }
+      @keyframes p2 { 0%,17% { opacity:0 } 19%,96% { opacity:1 } 100% { opacity:0 } }
+      @keyframes p3 { 0%,37% { opacity:0 } 39%,96% { opacity:1 } 100% { opacity:0 } }
+      @keyframes p4 { 0%,55% { opacity:0 } 57%,96% { opacity:1 } 100% { opacity:0 } }
+      @keyframes p5 { 0%,73% { opacity:0 } 75%,96% { opacity:1 } 100% { opacity:0 } }
+      @keyframes blink { 0%,49% { opacity:1 } 50%,100% { opacity:0 } }
+      @media (prefers-reduced-motion: reduce) {
+        .ln { opacity: 1; animation: none; }
+        .cur { animation: none; opacity: 1; }
+      }
+    </style>
   </defs>
-  <rect width="860" height="440" rx="14" fill="url(#term)" stroke="rgba(255,255,255,0.08)"/>
 
-  <!-- title bar -->
+  <rect width="860" height="470" rx="14" fill="url(#term)" stroke="rgba(255,255,255,0.08)"/>
   <rect width="860" height="38" rx="14" fill="rgba(255,255,255,0.04)"/>
   <rect y="24" width="860" height="14" fill="rgba(255,255,255,0.04)"/>
   <circle cx="24" cy="19" r="6" fill="#ff5f57"/>
@@ -17,32 +35,48 @@
   <text x="430" y="23" text-anchor="middle" font-size="11" fill="#64748b">team-vault · cohort</text>
 
   <g font-size="13">
-    <!-- load -->
-    <text x="24" y="74" fill="#22d3ee">$</text>
-    <text x="44" y="74" fill="#e2e8f0">claude<tspan fill="#475569">   # or kimi, zcode</tspan></text>
-    <text x="24" y="98" fill="#818cf8">&#62;</text>
-    <text x="44" y="98" fill="#e2e8f0">/cohort load team context</text>
+    <!-- phase 1: start + load -->
+    <g class="ln p1">
+      <text x="24" y="74" fill="#22d3ee">$</text>
+      <text x="44" y="74" fill="#e2e8f0">claude<tspan fill="#475569">   # or kimi, zcode</tspan></text>
+      <text x="24" y="96" fill="#818cf8">&#62;</text>
+      <text x="44" y="96" fill="#e2e8f0">/cohort load team context</text>
+    </g>
 
-    <text x="44" y="126" fill="#64748b">Shared team context from the Cohort vault</text>
-    <text x="44" y="146" fill="#64748b">(3 verified, 1 unverified; verified shown first)</text>
-    <text x="44" y="170" fill="#a5f3fc">[f-a1b2…] decision · verified by alice</text>
-    <text x="60" y="190" fill="#cbd5e1">Adopt Postgres for the primary store.</text>
-    <text x="44" y="212" fill="#475569">(retrieval budget: ~420 of 8000 tokens used)</text>
+    <!-- phase 2: load output (real shape) -->
+    <g class="ln p2">
+      <text x="44" y="122" fill="#64748b">Shared team context from the Cohort vault</text>
+      <text x="44" y="141" fill="#64748b">(3 verified, 1 unverified; verified shown first)</text>
+      <text x="44" y="164" fill="#a5f3fc">[d-7c1e…] decision · verified by alice</text>
+      <text x="60" y="183" fill="#cbd5e1">Adopt Postgres for the primary store.</text>
+      <text x="44" y="204" fill="#475569">(retrieval budget: ~198 of 8000 tokens used)</text>
+    </g>
 
-    <!-- propose -->
-    <text x="24" y="246" fill="#818cf8">&#62;</text>
-    <text x="44" y="246" fill="#e2e8f0">remember: we rate-limit the API at 100 req/s per key</text>
-    <text x="44" y="272" fill="#94a3b8">cohort_propose <tspan fill="#64748b">→</tspan> <tspan fill="#febc2e">pending</tspan> (held for human approval)</text>
-    <text x="44" y="292" fill="#64748b">opened PR · nothing lands until a human approves</text>
+    <!-- phase 3: propose -->
+    <g class="ln p3">
+      <text x="24" y="236" fill="#818cf8">&#62;</text>
+      <text x="44" y="236" fill="#e2e8f0">remember: staging uses a shared read replica</text>
+      <text x="44" y="258" fill="#94a3b8">cohort_propose <tspan fill="#64748b">&#8594;</tspan> <tspan fill="#febc2e">pending</tspan> (held for human approval)</text>
+    </g>
 
-    <!-- verify -->
-    <text x="24" y="330" fill="#22d3ee">$</text>
-    <text x="44" y="330" fill="#e2e8f0">cohort verify --by alice f-9f3c2a1b7e45</text>
-    <text x="44" y="356" fill="#28c840">f-9f3c2a1b7e45: verified</text>
+    <!-- phase 4: verify (real output) -->
+    <g class="ln p4">
+      <text x="24" y="292" fill="#22d3ee">$</text>
+      <text x="44" y="292" fill="#e2e8f0">cohort verify --by alice f-a77a5f7d9fe2</text>
+      <text x="44" y="314" fill="#28c840">f-a77a5f7d9fe2: verified</text>
+    </g>
 
-    <!-- why -->
-    <text x="24" y="390" fill="#22d3ee">$</text>
-    <text x="44" y="390" fill="#e2e8f0">cohort why f-9f3c2a1b7e45 <tspan fill="#475569"># who, which model, when</tspan></text>
-    <text x="44" y="414" fill="#64748b">first seen 2026-10-18 · alice · model claude-opus · from git</text>
+    <!-- phase 5: stats (real output, now 4 verified) -->
+    <g class="ln p5">
+      <text x="24" y="348" fill="#22d3ee">$</text>
+      <text x="44" y="348" fill="#e2e8f0">cohort stats --vault team-vault</text>
+      <text x="44" y="370" fill="#cbd5e1">records: 4 (fact 3, decision 1, thread 0)</text>
+      <text x="44" y="389" fill="#cbd5e1">status: verified 4, quarantined 0, proposed 0, superseded 0</text>
+      <text x="44" y="408" fill="#475569">current load: ~198 tokens · no telemetry</text>
+    </g>
+
+    <!-- prompt + cursor -->
+    <text x="24" y="440" fill="#22d3ee">$</text>
+    <rect class="cur" x="44" y="430" width="8" height="14" fill="#e2e8f0"/>
   </g>
 </svg>

@@ -75,10 +75,12 @@ project policy.
   install steps, the developers path, daily use, and the connector-count
   limitation.
 - The root README is refreshed for the completed roadmap: a new hero banner,
-  a system-at-a-glance diagram, and a terminal demo (`docs/hero.svg`,
-  `docs/overview.svg`, `docs/demo.svg`); the engine's six tools and the CLI
-  commands; a collapsible quickstart; and a roadmap that marks all six phases
-  shipped. The stale "Phase 1, in progress" framing is removed.
+  a system-at-a-glance diagram, and an animated terminal demo that plays real
+  `cohort` CLI output (`docs/hero.svg`, `docs/overview.svg`, `docs/demo.svg`);
+  the engine's six tools and the CLI commands; a collapsible quickstart; and a
+  roadmap that marks all six phases shipped. The stale "Phase 1, in progress"
+  framing is removed, and `docs/architecture.svg` is restyled to match the new
+  visuals and made client-neutral.
 
 ### Fixed
 
