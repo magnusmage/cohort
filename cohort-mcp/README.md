@@ -4,11 +4,10 @@ The Cohort MCP server: the client-neutral engine behind the Cohort shared-memory
 vault. It speaks the Model Context Protocol over stdio, so any MCP client can load
 team context and propose human-approved writebacks through one server.
 
-This package is the Phase 1 scaffold. The four Phase 1 tools are registered and the
-handshake works end to end, but each tool is a stub that returns an explicit
-"not implemented yet" response. The real behaviour lands in the following Phase 1
-tickets (git transport, policy loader, write gate, and the load and propose tools).
-See `docs/planning/COHORT-PHASE1-TICKETS.md` in the repository root.
+Phase 1 (the walking skeleton) and Phase 2 (the trust and safety spine) are
+implemented: the policy engine, record schema, git transport, write gate, the
+tools below, trust tiers with human-only verification, and the install command.
+The build plan and tickets are in `docs/planning/` in the repository root.
 
 ## Requirements
 
@@ -28,14 +27,29 @@ It starts a stdio server and waits for a client. Register it with Claude Code:
 claude mcp add cohort -- npx -y cohort-mcp
 ```
 
-After that, the client lists four tools:
+After that, the client lists these tools:
 
 | Tool | Purpose |
 |---|---|
-| `cohort_load` | Return bounded team context from the vault, fenced as data not instructions. |
+| `cohort_load` | Return bounded team context from the vault, fenced as data not instructions, verified-first. |
 | `cohort_propose` | Run proposed records through the server-enforced write gate. |
-| `cohort_status` | Report the effective policy summary and pending state. |
+| `cohort_status` | Report the effective policy, record counts, and the quarantine queue. |
 | `cohort_policy_get` | Return the caller's effective, read-only policy limits. |
+| `cohort_search` | Search the vault, honoring readable scope; verified-only by default, with an include_quarantined opt-in. |
+
+## CLI
+
+Some actions are human-run on the terminal, by design, not callable by the model:
+
+```sh
+cohort init --vault <dir> --agent <id>         # seed policy, wire Claude, print next steps
+cohort verify --vault <dir> --by <handle> <id> # promote a record from quarantined to verified
+cohort stats --vault <dir>                     # record counts, writebacks, current load size
+```
+
+`verify` is a CLI command rather than a tool so the model can propose and read
+but never promote. Session capture (turning session notes into classified draft
+records) feeds the propose flow; the drafts still pass the gate.
 
 ## Develop
 
@@ -49,16 +63,18 @@ npm run audit      # fail on a high or critical advisory
 ```
 
 Tests use Node's built-in test runner, so there is no extra test-framework
-dependency. The suite connects an in-memory client to the server and asserts that
-exactly the four tools register and that each returns its stub response.
+dependency. The suite connects an in-memory client to the server and covers the
+policy engine, the record schema, the git transport, the write gate, and each
+tool, alongside end-to-end and adversarial suites.
 
 ## Security
 
-The server is the only trusted component in Cohort. From the first real tool
-onward it enforces consent against the vault's `policy.yml`, scans every write for
-secrets, and fences loaded memory as data, not instructions. This scaffold adds no
-network calls and no file writes; it only lists tools and returns stub responses.
-The runtime dependency surface is deliberately small: the MCP SDK and zod, both
+The server is the only trusted component in Cohort. It enforces consent against
+the vault's `policy.yml`, scans every write for secrets and PII, fences loaded
+memory as data not instructions, and only ever commits through the write gate;
+promotion to verified is a human-only CLI action. It makes no network calls
+beyond the user's own git remote and no telemetry. The runtime dependency
+surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.
 
 ## License
