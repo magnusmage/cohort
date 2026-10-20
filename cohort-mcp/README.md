@@ -78,11 +78,6 @@ cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.m
 cohort reabsorb --vault <dir> --file <name>       # reabsorb hand-edits to a generated file as gated proposals
 cohort export --vault <dir> --out <file>          # export the whole vault to a portable JSON document
 cohort import --vault <dir> --in <file>           # import records from a portable document (writes, you commit)
-cohort access --config <file> --vault <id> --path <p>  # evaluate multi-vault access (least privilege, fail-closed)
-cohort encrypt-setup --vault <dir>                # wire .gitattributes/.gitignore for git-crypt or age at-rest encryption
-cohort encrypt-check --vault <dir>                # verify no key is tracked and sensitive paths are encrypted
-cohort recover --vault <dir> <id>                 # recover a removed or superseded record from git history
-cohort retention --vault <dir>                    # list removed records and whether they are within the retention window
 ```
 
 `verify` and `supersede` are CLI commands rather than tools so the model can
@@ -137,19 +132,7 @@ a poisoned fact cannot quietly override verified memory. Records are
 content-addressed, so concurrent writebacks of the same fact dedup to one path
 and distinct facts never collide; a path that is already occupied is never
 overwritten, so a re-proposal cannot clobber a verified record, and a real
-collision is surfaced for a human. Across several vaults, `cohort access`
-resolves a per-vault, per-path decision that is least-privilege and fail-closed:
-nothing is permitted without an explicit grant, an unknown vault or agent is
-denied, a vault-wide deny overrides any grant, and a missing or invalid access
-document denies everything. For at-rest encryption, Cohort does not roll its own
-crypto: `cohort encrypt-setup` wires the configured sensitive paths through a
-standard git-crypt or age filter and keeps key patterns out of git, and
-`cohort encrypt-check` fails closed if a key is tracked or a sensitive path is
-not encrypted. The key lives outside the repository and is never read or logged
-by Cohort. Because no record is ever hard-deleted, `cohort recover` restores a
-removed or superseded record by id from git history for a human to review and
-commit, and `cohort retention` reports which removed records are still within
-the configured recovery window. Nothing here rewrites or prunes git history. It makes no network calls
+collision is surfaced for a human. It makes no network calls
 beyond the user's own git remote and no telemetry. The runtime dependency
 surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.

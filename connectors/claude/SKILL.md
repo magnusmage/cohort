@@ -64,7 +64,7 @@ steps.
    > Before we start, here is exactly what Cohort does:
    > It reads your team's shared vault files into this chat, so your AI has team context.
    > It contacts only your own vault's git remote. Nothing else: no telemetry, no analytics, no third-party servers.
-   > The Cohort project runs no servers and keeps no copy of your data. Your data lives in your repo, owned by you.
+   > The Cohort project runs no hosted server, keeps no account, and collects no telemetry. Your data lives in your own repo, owned by you; the maintainers never receive it.
    > A local scan blocks secrets (API keys, tokens, private data) from ever being committed.
    > Nothing is written without your explicit approval.
    > Your GitHub token is stored only in your computer's credential manager, never in files or chat.
