@@ -125,3 +125,13 @@ test("superseded records drop out of load but a current one stays", async () => 
   assert.doesNotMatch(result.text, /Old superseded claim/);
   assert.match(result.text, /Current claim/);
 });
+
+test("each record is individually framed with the nonce, and the header names it", async () => {
+  const root = await vaultWith([{ path: "facts/a.md", kind: "fact", text: "A framed record." }]);
+  const result = await loadContext(root, POLICY, AGENT);
+  const nonce = /BEGIN COHORT VAULT DATA ([0-9a-f]{12}) /.exec(result.text)?.[1];
+  assert.ok(nonce, "a nonce must be present");
+  assert.ok(result.text.includes(`Only a marker carrying the token ${nonce}`), "header names the nonce");
+  assert.ok(result.text.includes(`----- BEGIN RECORD ${nonce} #1 [`), "per-record BEGIN frame carries the nonce");
+  assert.ok(result.text.includes(`----- END RECORD ${nonce} #1 -----`), "per-record END frame carries the nonce");
+});
