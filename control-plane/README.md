@@ -26,8 +26,24 @@ COHORT_VAULT_DIR=/path/to/vault npm start   # or: node dist/index.js
 ```
 
 The dashboard listens on `COHORT_CP_PORT` (default 8787). With no identity
-provider configured it denies every content route by default; configure single
-sign-on to open it (see `sso` in the source).
+provider configured it denies every content route by default.
+
+## Single sign-on
+
+The control plane sits behind the team's SSO or OIDC front, which authenticates
+the person and mints a short session it hands to the dashboard. The control
+plane verifies that session: signature, expiry, and (optionally) a subject
+allowlist. It fails closed on anything missing, malformed, unsigned, expired, or
+disallowed.
+
+- `COHORT_CP_SSO_SIGNING`: the HMAC secret shared with the SSO front. Supplied
+  from the environment, never committed. When unset, the dashboard denies
+  everything.
+- `COHORT_CP_SSO_SUBJECTS`: an optional comma-separated allowlist of subjects.
+
+The session is `base64url(payload).base64url(hmacSHA256(payload))`, where
+payload is JSON `{ "sub": "...", "exp": <epoch seconds> }`. The open-core vault,
+server, and CLI never call this boundary and never depend on it.
 
 ## Develop
 
