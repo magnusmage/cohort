@@ -5,8 +5,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type LoadResult, defaultLoadContext } from "./load.js";
 import { type EffectivePolicyView, defaultPolicyView } from "./policy.js";
 import { type ProposeItem, type ProposeItemResult, defaultPropose } from "./propose.js";
+import { type SearchResult, defaultSearch } from "./search.js";
 import { type StatusView, defaultStatus } from "./status.js";
-import { loadInput, policyGetInput, proposeInput, statusInput } from "./tools.js";
+import { loadInput, policyGetInput, proposeInput, searchInput, statusInput } from "./tools.js";
 
 export const SERVER_NAME = "cohort-mcp";
 export const SERVER_VERSION = "0.1.0";
@@ -18,6 +19,9 @@ export const PHASE1_TOOLS = [
   "cohort_status",
   "cohort_policy_get",
 ] as const;
+
+/** All tools the server currently registers (Phase 1 tools plus later additions). */
+export const TOOLS = [...PHASE1_TOOLS, "cohort_search"] as const;
 
 /** Returns the caller's effective, read-only policy view. */
 export type PolicyProvider = () => Promise<EffectivePolicyView>;
@@ -31,6 +35,9 @@ export type ProposeRunner = (items: ProposeItem[]) => Promise<ProposeItemResult[
 /** Returns a read-only snapshot of the vault and policy state. */
 export type StatusProvider = () => Promise<StatusView>;
 
+/** Runs a vault search and returns the hits. */
+export type SearchProvider = (args: { query: string; includeQuarantined?: boolean }) => Promise<SearchResult>;
+
 export interface ServerOptions {
   /** Supplies the read-only policy view for cohort_policy_get. Injectable for tests. */
   policyProvider?: PolicyProvider;
@@ -40,6 +47,8 @@ export interface ServerOptions {
   proposeRunner?: ProposeRunner;
   /** Supplies the status snapshot for cohort_status. Injectable for tests. */
   statusProvider?: StatusProvider;
+  /** Runs vault search for cohort_search. Injectable for tests. */
+  searchProvider?: SearchProvider;
 }
 
 function textResult(text: string) {
@@ -62,6 +71,8 @@ export function createServer(options: ServerOptions = {}): McpServer {
     options.proposeRunner ?? ((items) => defaultPropose(process.env, process.cwd(), items));
   const statusProvider: StatusProvider =
     options.statusProvider ?? (() => defaultStatus(process.env, process.cwd()));
+  const searchProvider: SearchProvider =
+    options.searchProvider ?? ((args) => defaultSearch(process.env, process.cwd(), args));
 
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 
@@ -116,6 +127,20 @@ export function createServer(options: ServerOptions = {}): McpServer {
     async () => {
       const view = await policyProvider();
       return textResult(JSON.stringify(view, null, 2));
+    },
+  );
+
+  server.registerTool(
+    "cohort_search",
+    {
+      title: "Search the vault",
+      description:
+        "Search the vault, honoring readable scope. Verified-only by default; set include_quarantined to include agent-asserted records.",
+      inputSchema: searchInput,
+    },
+    async ({ query, include_quarantined }) => {
+      const result = await searchProvider({ query, includeQuarantined: include_quarantined });
+      return textResult(JSON.stringify(result, null, 2));
     },
   );
 

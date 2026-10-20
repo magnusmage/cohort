@@ -44,6 +44,8 @@
     "dist/verify.d.ts",
     "dist/capture.js",
     "dist/capture.d.ts",
+    "dist/search.js",
+    "dist/search.d.ts",
     "README.md"
   ],
   "engines": {
