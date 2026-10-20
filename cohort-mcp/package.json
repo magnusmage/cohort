@@ -6,7 +6,8 @@
   "author": "evdatsion",
   "type": "module",
   "bin": {
-    "cohort-mcp": "dist/index.js"
+    "cohort-mcp": "dist/index.js",
+    "cohort": "dist/cli.js"
   },
   "main": "dist/server.js",
   "types": "dist/server.d.ts",
@@ -35,6 +36,10 @@
     "dist/propose.d.ts",
     "dist/status.js",
     "dist/status.d.ts",
+    "dist/init.js",
+    "dist/init.d.ts",
+    "dist/cli.js",
+    "dist/cli.d.ts",
     "README.md"
   ],
   "engines": {
