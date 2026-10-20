@@ -25,6 +25,7 @@ import { exportVault, importVault, parsePortable, serializePortable } from "./po
 import { loadPolicy } from "./policy.js";
 import { reabsorbFile } from "./reabsorb.js";
 import { computeStats } from "./stats.js";
+import { DEFAULT_RETENTION, listRemoved, loadRetentionFromText, recoverRecord } from "./retention.js";
 import { supersedeRecord } from "./supersede.js";
 import { verifyRecords } from "./verify.js";
 
@@ -53,6 +54,8 @@ const USAGE = [
   "  cohort access --config <file> --vault <id> --path <p> [--agent <id>] [--write]",
   "  cohort encrypt-setup --vault <dir>    # wire .gitattributes and .gitignore for at-rest encryption",
   "  cohort encrypt-check --vault <dir>    # verify no key is tracked and sensitive paths are encrypted",
+  "  cohort recover --vault <dir> <id> [--write]   # recover a removed or superseded record from git history",
+  "  cohort retention --vault <dir>        # list removed records and whether they are within the retention window",
 ].join("\n");
 
 interface InitFlags {
@@ -374,6 +377,52 @@ async function runEncryptCheck(args: string[]): Promise<void> {
   process.exit(1);
 }
 
+async function runRecover(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let write = false;
+  const ids: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--write") write = true;
+    else if (arg && !arg.startsWith("--")) ids.push(arg);
+  }
+  if (!vaultDir || ids.length === 0) {
+    process.stderr.write(`cohort recover: --vault and a record id are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const id = ids[0] as string;
+  const r = await recoverRecord(vaultDir, id, { restore: write });
+  if (!r.found) {
+    process.stdout.write(`${id}: not recoverable (${r.note ?? "no history"})\n`);
+    process.exit(1);
+  }
+  process.stdout.write(
+    [
+      `${id}: recoverable from ${r.path}`,
+      r.tracked ? "still tracked (nothing to recover)" : `removed ${r.removedAt ?? "unknown"} in ${r.removedIn ?? "unknown"}`,
+      `preview: ${r.preview ?? ""}`,
+      write ? (r.restored ? "restored to the working tree; review and commit it" : "already present; not overwritten") : "run again with --write to restore it",
+      "",
+    ].join("\n"),
+  );
+}
+
+async function runRetention(args: string[]): Promise<void> {
+  const vaultDir = vaultFlag(args);
+  if (!vaultDir) {
+    process.stderr.write(`cohort retention: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const configText = await readOrEmpty(join(vaultDir, ".cohort", "retention.yml"));
+  const cfg = configText ? loadRetentionFromText(configText) : DEFAULT_RETENTION;
+  const removed = await listRemoved(vaultDir, cfg);
+  process.stdout.write(`retention window: ${cfg.keep_days} day(s); ${removed.length} removed record(s)\n`);
+  for (const r of removed) {
+    process.stdout.write(`${r.id} (${r.path}) removed ${r.removedAt} - ${r.withinRetention ? "within window" : "beyond window (still in git)"}\n`);
+  }
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
@@ -388,6 +437,8 @@ async function main(): Promise<void> {
   else if (command === "access") await runAccess(rest);
   else if (command === "encrypt-setup") await runEncryptSetup(rest);
   else if (command === "encrypt-check") await runEncryptCheck(rest);
+  else if (command === "recover") await runRecover(rest);
+  else if (command === "retention") await runRetention(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);

@@ -81,6 +81,8 @@ cohort import --vault <dir> --in <file>           # import records from a portab
 cohort access --config <file> --vault <id> --path <p>  # evaluate multi-vault access (least privilege, fail-closed)
 cohort encrypt-setup --vault <dir>                # wire .gitattributes/.gitignore for git-crypt or age at-rest encryption
 cohort encrypt-check --vault <dir>                # verify no key is tracked and sensitive paths are encrypted
+cohort recover --vault <dir> <id>                 # recover a removed or superseded record from git history
+cohort retention --vault <dir>                    # list removed records and whether they are within the retention window
 ```
 
 `verify` and `supersede` are CLI commands rather than tools so the model can
@@ -144,7 +146,10 @@ crypto: `cohort encrypt-setup` wires the configured sensitive paths through a
 standard git-crypt or age filter and keeps key patterns out of git, and
 `cohort encrypt-check` fails closed if a key is tracked or a sensitive path is
 not encrypted. The key lives outside the repository and is never read or logged
-by Cohort. It makes no network calls
+by Cohort. Because no record is ever hard-deleted, `cohort recover` restores a
+removed or superseded record by id from git history for a human to review and
+commit, and `cohort retention` reports which removed records are still within
+the configured recovery window. Nothing here rewrites or prunes git history. It makes no network calls
 beyond the user's own git remote and no telemetry. The runtime dependency
 surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.
