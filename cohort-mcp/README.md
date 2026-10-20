@@ -45,6 +45,7 @@ Some actions are human-run on the terminal, by design, not callable by the model
 cohort init --vault <dir> --agent <id>            # seed policy, wire Claude, print next steps
 cohort verify --vault <dir> --by <handle> <id>    # promote a record from quarantined to verified
 cohort stats --vault <dir>                        # record counts, writebacks, current load size
+cohort index --vault <dir>                        # build the committed, diffable retrieval index (--check to verify)
 cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.md, Cursor rules from the vault
 cohort reabsorb --vault <dir> --file <name>       # reabsorb hand-edits to a generated file as gated proposals
 cohort export --vault <dir> --out <file>          # export the whole vault to a portable JSON document
@@ -60,6 +61,13 @@ AGENTS.md, CLAUDE.md, and Cursor rules from the vault's verified records;
 `reabsorb` turns hand-edits to those files back into gated proposals, so the
 vault stays the source of truth and nothing is written back silently; `export`
 and `import` move a whole vault losslessly on a portable schema.
+
+The retrieval index is a committed, diffable JSON document under
+`.cohort/index/`, built from the vault's records. `index` rebuilds it and
+`index --check` reports any drift from the vault, so a reviewer sees exactly
+what retrieval will see. A rebuild on the same committed vault is byte-identical,
+and the index holds record metadata and size estimates only, never record
+bodies, so committing it never widens what a reader can see.
 
 ## Develop
 

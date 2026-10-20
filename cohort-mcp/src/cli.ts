@@ -10,6 +10,7 @@ import {
   writeDesktopConfig,
 } from "./init.js";
 import { generateBridge } from "./bridge.js";
+import { buildIndex, indexStatus, writeIndex } from "./indexer.js";
 import { exportVault, importVault, parsePortable, serializePortable } from "./portable.js";
 import { loadPolicy } from "./policy.js";
 import { reabsorbFile } from "./reabsorb.js";
@@ -32,6 +33,7 @@ const USAGE = [
   "              [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]",
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
   "  cohort stats --vault <dir> [--agent <id>]",
+  "  cohort index --vault <dir> [--check]",
   "  cohort bridge --vault <dir> [--include-quarantined]",
   "  cohort reabsorb --vault <dir> --file <name> [--agent <id>]",
   "  cohort export --vault <dir> [--out <file>]",
@@ -149,6 +151,38 @@ async function runStats(args: string[]): Promise<void> {
   );
 }
 
+async function runIndex(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let check = false;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--check") check = true;
+  }
+  if (!vaultDir) {
+    process.stderr.write(`cohort index: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+
+  if (check) {
+    const status = await indexStatus(vaultDir);
+    if (status.inSync) {
+      process.stdout.write("index is in sync with the vault\n");
+      return;
+    }
+    if (!status.committed) process.stdout.write("index is not committed yet\n");
+    if (status.missing.length) process.stdout.write(`missing ${status.missing.length}: ${status.missing.join(", ")}\n`);
+    if (status.stale.length) process.stdout.write(`stale ${status.stale.length}: ${status.stale.join(", ")}\n`);
+    if (status.changed.length) process.stdout.write(`changed ${status.changed.length}: ${status.changed.join(", ")}\n`);
+    process.stderr.write("run `cohort index --vault <dir>` to rebuild, then review and commit\n");
+    process.exit(1);
+  }
+
+  const index = await buildIndex(vaultDir);
+  const path = await writeIndex(vaultDir, index);
+  process.stdout.write(`wrote ${path} with ${index.records.length} record(s); review and commit it\n`);
+}
+
 async function runBridge(args: string[]): Promise<void> {
   let vaultDir: string | undefined;
   let includeQuarantined = false;
@@ -230,6 +264,7 @@ async function main(): Promise<void> {
   if (command === "init") await runInit(rest);
   else if (command === "verify") await runVerify(rest);
   else if (command === "stats") await runStats(rest);
+  else if (command === "index") await runIndex(rest);
   else if (command === "bridge") await runBridge(rest);
   else if (command === "reabsorb") await runReabsorb(rest);
   else if (command === "export") await runExport(rest);

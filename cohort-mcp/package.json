@@ -1,7 +1,7 @@
 {
   "name": "cohort-mcp",
   "version": "0.1.0",
-  "description": "Cohort MCP server: the client-neutral engine behind the Cohort shared-memory vault. Scaffold with the four Phase 1 tool stubs.",
+  "description": "Cohort MCP server: the client-neutral engine behind the Cohort shared-memory vault.",
   "license": "Apache-2.0",
   "author": "evdatsion",
   "type": "module",
@@ -54,6 +54,8 @@
     "dist/reabsorb.d.ts",
     "dist/portable.js",
     "dist/portable.d.ts",
+    "dist/indexer.js",
+    "dist/indexer.d.ts",
     "README.md"
   ],
   "engines": {
