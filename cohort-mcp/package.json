@@ -42,6 +42,8 @@
     "dist/cli.d.ts",
     "dist/verify.js",
     "dist/verify.d.ts",
+    "dist/capture.js",
+    "dist/capture.d.ts",
     "README.md"
   ],
   "engines": {
