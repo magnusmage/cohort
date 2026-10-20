@@ -48,6 +48,8 @@
     "dist/search.d.ts",
     "dist/stats.js",
     "dist/stats.d.ts",
+    "dist/bridge.js",
+    "dist/bridge.d.ts",
     "README.md"
   ],
   "engines": {

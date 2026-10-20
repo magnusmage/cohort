@@ -8,6 +8,7 @@ import {
   serverEntry,
   writeDesktopConfig,
 } from "./init.js";
+import { generateBridge } from "./bridge.js";
 import { loadPolicy } from "./policy.js";
 import { computeStats } from "./stats.js";
 import { verifyRecords } from "./verify.js";
@@ -28,6 +29,7 @@ const USAGE = [
   "              [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]",
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
   "  cohort stats --vault <dir> [--agent <id>]",
+  "  cohort bridge --vault <dir> [--include-quarantined]",
 ].join("\n");
 
 interface InitFlags {
@@ -141,11 +143,28 @@ async function runStats(args: string[]): Promise<void> {
   );
 }
 
+async function runBridge(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let includeQuarantined = false;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--include-quarantined") includeQuarantined = true;
+  }
+  if (!vaultDir) {
+    process.stderr.write(`cohort bridge: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const { written } = await generateBridge(vaultDir, { includeQuarantined });
+  for (const path of written) process.stdout.write(`generated ${path}\n`);
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
   else if (command === "verify") await runVerify(rest);
   else if (command === "stats") await runStats(rest);
+  else if (command === "bridge") await runBridge(rest);
   else {
     process.stdout.write(`${USAGE}\n`);
     process.exit(command ? 1 : 0);
