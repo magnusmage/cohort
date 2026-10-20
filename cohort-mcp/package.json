@@ -70,6 +70,8 @@
     "dist/access.d.ts",
     "dist/encryption.js",
     "dist/encryption.d.ts",
+    "dist/retention.js",
+    "dist/retention.d.ts",
     "README.md"
   ],
   "engines": {
