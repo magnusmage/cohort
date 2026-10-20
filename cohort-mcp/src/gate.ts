@@ -4,6 +4,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 import picomatch from "picomatch";
 
+import { type Contradiction, detectContradiction } from "./contradiction.js";
 import { type PrOpener, landWrite } from "./git.js";
 import { lintForInjection } from "./lint.js";
 import { HARD_NEVER_CLASSES, type LoadedPolicy, resolveEffective } from "./policy.js";
@@ -19,6 +20,7 @@ import type { SecretScanner } from "./scan.js";
  *   2. never-class   the secret and PII classes are hard-denied
  *   3. secret-scan   scan the content; a missing scanner or any finding rejects
  *   4. instruction-lint  flagged content can never auto-land
+ *   4b. contradiction  a fact that negates a verified fact can never auto-land
  *   5. classify      the declared class is a hint, never an authorization
  *   6. decide        resolve the effective policy for the server-set identity
  *   7. land          auto commits or opens a PR; ask returns a pending handle;
@@ -45,6 +47,8 @@ export interface GateDeps {
   scanner: SecretScanner;
   prOpener?: PrOpener;
   linter?: (content: string) => { flagged: boolean; reasons: string[] };
+  /** Supplies the verified facts to check a proposed fact against. When absent, the check is skipped. */
+  verifiedFacts?: () => Promise<VaultRecord[]>;
 }
 
 export type GateDecision =
@@ -133,20 +137,30 @@ export async function runGate(
   // 4. instruction-lint.
   const lint = (deps.linter ?? lintForInjection)(serialized);
 
+  // 4b. contradiction check. A proposed fact that negates a verified fact on the
+  // same topic is never auto-landed, so a poisoned fact cannot quietly override
+  // verified memory. It is surfaced for a human, not resolved here.
+  let contradiction: Contradiction = { conflict: false };
+  if (proposal.record.meta.kind === "fact" && deps.verifiedFacts) {
+    contradiction = detectContradiction(proposal.record, await deps.verifiedFacts());
+  }
+
   // 5 and 6. classify (declared class is a hint) and decide.
   const className = proposal.declaredClass;
   const effective = resolveEffective(policy, { className, agentId });
   let propose = effective.propose;
   if (!className && propose === "auto") propose = "ask"; // no class is ambiguous: never auto
   if (lint.flagged && propose === "auto") propose = "ask"; // injection shape: never auto
+  if (contradiction.conflict && propose === "auto") propose = "ask"; // contradiction: never auto
 
   // 7. land.
   if (propose === "never") return reject("policy forbids this write (never)");
   if (propose === "ask") {
     const handle = randomBytes(8).toString("hex");
-    const reason = lint.flagged
-      ? `held for human approval (flagged: ${lint.reasons.join(", ")})`
-      : "held for human approval";
+    const flags: string[] = [];
+    if (lint.flagged) flags.push(`flagged: ${lint.reasons.join(", ")}`);
+    if (contradiction.conflict && contradiction.reason) flags.push(contradiction.reason);
+    const reason = flags.length > 0 ? `held for human approval (${flags.join("; ")})` : "held for human approval";
     return { decision: "pending", handle, reason };
   }
 

@@ -1,5 +1,6 @@
 import { join } from "node:path";
 
+import { loadVerifiedFacts } from "./contradiction.js";
 import { type PrOpener, ghPrOpener } from "./git.js";
 import { type GateDecision, runGate } from "./gate.js";
 import { type LoadedPolicy, loadPolicy } from "./policy.js";
@@ -83,6 +84,7 @@ export async function runProposals(
     const gateDeps = {
       scanner: deps.scanner,
       ...(deps.prOpener ? { prOpener: deps.prOpener } : {}),
+      verifiedFacts: () => loadVerifiedFacts(root),
     };
     const decision = await runGate(root, loaded, agentId, { record, targetPath, declaredClass: item.class }, gateDeps);
     results.push(mapDecision(index, item.kind, record.meta.id, decision));

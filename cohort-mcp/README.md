@@ -90,7 +90,9 @@ tool, alongside end-to-end and adversarial suites.
 The server is the only trusted component in Cohort. It enforces consent against
 the vault's `policy.yml`, scans every write for secrets and PII, fences loaded
 memory as data not instructions, and only ever commits through the write gate;
-promotion to verified is a human-only CLI action. It makes no network calls
+promotion to verified is a human-only CLI action. A proposed fact that negates a
+verified fact on the same topic is held for a human rather than auto-landed, so
+a poisoned fact cannot quietly override verified memory. It makes no network calls
 beyond the user's own git remote and no telemetry. The runtime dependency
 surface is deliberately small: the MCP SDK, zod, yaml, and picomatch, all
 pinned, with a committed lockfile and an audit step.
