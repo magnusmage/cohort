@@ -4,10 +4,36 @@ The Cohort MCP server: the client-neutral engine behind the Cohort shared-memory
 vault. It speaks the Model Context Protocol over stdio, so any MCP client can load
 team context and propose human-approved writebacks through one server.
 
-Phase 1 (the walking skeleton) and Phase 2 (the trust and safety spine) are
-implemented: the policy engine, record schema, git transport, write gate, the
-tools below, trust tiers with human-only verification, and the install command.
-The build plan and tickets are in `docs/planning/` in the repository root.
+Phases 1 through 5 are implemented: the policy engine, record schema, git
+transport, and write gate (Phase 1); trust tiers with human-only verification
+(Phase 2); session capture and search (Phase 3); the adoption bridge and
+portable export and import (Phase 4); and the retrieval and review intelligence
+that makes up the moat (Phase 5), described below. The build plan and tickets
+are in `docs/planning/` in the repository root.
+
+## Retrieval and review intelligence
+
+The moat is how Cohort stays trustworthy over a large, multi-writer vault:
+
+- **Git-native index.** A committed, diffable index under `.cohort/index/` is
+  built from the vault's records and rebuilds byte-identically, so retrieval
+  state is reviewable in a pull request and checkable in CI.
+- **Token-budgeted, verified-first retrieval.** `cohort_load` fills a hard token
+  budget in rank order and stops, so a load stays bounded as the vault grows.
+  The cut is verified-first: the budget is never spent on a lower-ranked record
+  ahead of a higher one.
+- **Contradiction detection.** A proposed fact that negates a verified fact on
+  the same topic is held for a human rather than auto-landed.
+- **Staleness, supersession, and decay.** A record past its `review_by` horizon
+  is surfaced and ranked below fresh records, never dropped automatically. A
+  verified record can supersede an older one, which leaves load but stays in git
+  history; only a verified supersedes claim is honored.
+- **Deterministic merge.** Content-addressed records dedup to one path and never
+  collide; an occupied path is never overwritten, so a re-proposal cannot clobber
+  a verified record, and a real collision is surfaced for a human.
+- **Provenance forensics.** `cohort_why` returns who, which model, when, and why
+  a record exists, read from git history, with the writer's self-asserted claim
+  shown separately from the authoritative git record.
 
 ## Requirements
 
