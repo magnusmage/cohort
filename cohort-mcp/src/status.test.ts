@@ -48,6 +48,11 @@ test("status reports real counts by kind and status", async () => {
   assert.equal(view.counts.byStatus.verified, 1);
   assert.equal(view.counts.unreadable, 1, "the malformed file is counted, not guessed");
   assert.equal(view.quarantine.count, 2);
+  assert.equal(view.quarantine.items.length, 2, "the queue lists the records awaiting verification");
+  const previews = view.quarantine.items.map((i) => i.preview);
+  assert.ok(previews.includes("Fact one."));
+  assert.ok(previews.includes("A decision."));
+  assert.ok(view.quarantine.items.every((i) => i.id && i.kind), "each queue item has an id and kind");
 });
 
 test("status reports policy and an untracked pending list", async () => {

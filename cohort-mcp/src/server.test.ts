@@ -43,7 +43,11 @@ const SAMPLE_STATUS: StatusView = {
     unreadable: 0,
   },
   pending: { tracked: false, items: [] },
-  quarantine: { count: 3, note: "promotion via cohort_verify arrives in Phase 2" },
+  quarantine: {
+    count: 1,
+    items: [{ id: "f-000000000000", kind: "fact", preview: "a quarantined fact" }],
+    note: "these records await human verification; promote them with cohort verify",
+  },
 };
 
 const SAMPLE_LOAD: LoadResult = {
