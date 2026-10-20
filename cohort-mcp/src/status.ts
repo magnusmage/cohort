@@ -26,7 +26,14 @@ export interface StatusView {
     unreadable: number;
   };
   pending: { tracked: boolean; items: string[] };
-  quarantine: { count: number; note: string };
+  quarantine: { count: number; items: Array<{ id: string; kind: string; preview: string }>; note: string };
+}
+
+const QUEUE_LIMIT = 50;
+
+function preview(text: string): string {
+  const firstLine = text.split("\n", 1)[0] ?? "";
+  return firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine;
 }
 
 export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: string | null): Promise<StatusView> {
@@ -34,6 +41,7 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
   const byKind = { fact: 0, decision: 0, thread: 0 };
   const byStatus = { proposed: 0, quarantined: 0, verified: 0, superseded: 0 };
   let unreadable = 0;
+  const queue: Array<{ id: string; kind: string; preview: string }> = [];
 
   const tracked = await listTracked(root, ".");
   const files = tracked.filter((f) => f.endsWith(".md") && RECORD_DIRS.some((d) => f.startsWith(`${d}/`)));
@@ -42,6 +50,9 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
       const record = parseRecord(await readVaultFile(root, f));
       byKind[record.meta.kind] += 1;
       byStatus[record.meta.status] += 1;
+      if (record.meta.status === "quarantined" && queue.length < QUEUE_LIMIT) {
+        queue.push({ id: record.meta.id, kind: record.meta.kind, preview: preview(record.text) });
+      }
     } catch {
       unreadable += 1;
     }
@@ -54,7 +65,11 @@ export async function buildStatus(root: string, loaded: LoadedPolicy, agentId: s
     effective: resolveEffective(policy, { agentId }),
     counts: { byKind, byStatus, unreadable },
     pending: { tracked: false, items: [] },
-    quarantine: { count: byStatus.quarantined, note: "promotion via cohort_verify arrives in Phase 2" },
+    quarantine: {
+      count: byStatus.quarantined,
+      items: queue,
+      note: "these records await human verification; promote them with cohort verify",
+    },
   };
   if (loaded.reason !== undefined) view.reason = loaded.reason;
   return view;
