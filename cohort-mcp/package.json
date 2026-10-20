@@ -58,6 +58,10 @@
     "dist/indexer.d.ts",
     "dist/contradiction.js",
     "dist/contradiction.d.ts",
+    "dist/staleness.js",
+    "dist/staleness.d.ts",
+    "dist/supersede.js",
+    "dist/supersede.d.ts",
     "README.md"
   ],
   "engines": {

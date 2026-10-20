@@ -15,6 +15,7 @@ import { exportVault, importVault, parsePortable, serializePortable } from "./po
 import { loadPolicy } from "./policy.js";
 import { reabsorbFile } from "./reabsorb.js";
 import { computeStats } from "./stats.js";
+import { supersedeRecord } from "./supersede.js";
 import { verifyRecords } from "./verify.js";
 
 /**
@@ -32,6 +33,7 @@ const USAGE = [
   "  cohort init --vault <dir> --agent <id> [--scope user|project] [--desktop-config <path>]",
   "              [--no-mcp --skill-source <SKILL.md> --skill-dest <dir>]",
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
+  "  cohort supersede --vault <dir> --old <id> --new <id>",
   "  cohort stats --vault <dir> [--agent <id>]",
   "  cohort index --vault <dir> [--check]",
   "  cohort bridge --vault <dir> [--include-quarantined]",
@@ -120,6 +122,25 @@ async function runVerify(args: string[]): Promise<void> {
     process.stdout.write(`${r.id}: ${r.status}${r.reason ? ` (${r.reason})` : ""}\n`);
   }
   process.exit(results.some((r) => r.status === "error") ? 1 : 0);
+}
+
+async function runSupersede(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let oldId: string | undefined;
+  let newId: string | undefined;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--old") oldId = args[(i += 1)];
+    else if (arg === "--new") newId = args[(i += 1)];
+  }
+  if (!vaultDir || !oldId || !newId) {
+    process.stderr.write(`cohort supersede: --vault, --old, and --new are required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const r = await supersedeRecord(vaultDir, oldId, newId);
+  process.stdout.write(`${r.oldId} -> ${r.newId}: ${r.status}${r.reason ? ` (${r.reason})` : ""}\n`);
+  process.exit(r.status === "superseded" ? 0 : 1);
 }
 
 async function runStats(args: string[]): Promise<void> {
@@ -263,6 +284,7 @@ async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   if (command === "init") await runInit(rest);
   else if (command === "verify") await runVerify(rest);
+  else if (command === "supersede") await runSupersede(rest);
   else if (command === "stats") await runStats(rest);
   else if (command === "index") await runIndex(rest);
   else if (command === "bridge") await runBridge(rest);

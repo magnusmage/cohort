@@ -44,6 +44,7 @@ Some actions are human-run on the terminal, by design, not callable by the model
 ```sh
 cohort init --vault <dir> --agent <id>            # seed policy, wire Claude, print next steps
 cohort verify --vault <dir> --by <handle> <id>    # promote a record from quarantined to verified
+cohort supersede --vault <dir> --old <id> --new <id>  # mark a record replaced; it leaves load, stays in history
 cohort stats --vault <dir>                        # record counts, writebacks, current load size
 cohort index --vault <dir>                        # build the committed, diffable retrieval index (--check to verify)
 cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.md, Cursor rules from the vault
@@ -52,9 +53,17 @@ cohort export --vault <dir> --out <file>          # export the whole vault to a 
 cohort import --vault <dir> --in <file>           # import records from a portable document (writes, you commit)
 ```
 
-`verify` is a CLI command rather than a tool so the model can propose and read
-but never promote. Session capture (turning session notes into classified draft
-records) feeds the propose flow; the drafts still pass the gate.
+`verify` and `supersede` are CLI commands rather than tools so the model can
+propose and read but never promote or retire a record. Session capture (turning
+session notes into classified draft records) feeds the propose flow; the drafts
+still pass the gate.
+
+A superseded record keeps its file and stays in git history, but drops out of
+load, so retired memory is retrievable but not served. Only a verified record's
+supersedes claim is honored, so a low-trust record cannot hide a verified one. A
+record past its `review_by` horizon is stale: it is surfaced in `cohort_status`
+and labeled in loaded context, and it ranks below fresh records within its trust
+tier, but it is never removed or trusted less automatically.
 
 The adoption bridge keeps the files teams already use. `bridge` generates
 AGENTS.md, CLAUDE.md, and Cursor rules from the vault's verified records;
