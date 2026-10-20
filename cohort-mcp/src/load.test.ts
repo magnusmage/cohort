@@ -126,6 +126,44 @@ test("superseded records drop out of load but a current one stays", async () => 
   assert.match(result.text, /Current claim/);
 });
 
+test("retrieval stays within a hard token budget and counts the rest withheld", async () => {
+  // Each body is ~800 chars (~200 tokens) so only one fits a 300-token budget.
+  const big = (tag: string): string => `${tag}: ${"word ".repeat(160)}`;
+  const root = await vaultWith([
+    { path: "facts/a.md", kind: "fact", text: big("alpha") },
+    { path: "facts/b.md", kind: "fact", text: big("bravo") },
+    { path: "facts/c.md", kind: "fact", text: big("charlie") },
+  ]);
+  const result = await loadContext(root, POLICY, AGENT, { tokenBudget: 300 });
+  assert.equal(result.budget, 300);
+  assert.ok(result.approxTokens <= 300, `used ${result.approxTokens} must stay within 300`);
+  assert.equal(result.included, 1, "only one big record fits the budget");
+  assert.ok(result.withheld >= 2, `expected the rest withheld, got ${result.withheld}`);
+  assert.match(result.text, /retrieval budget: ~\d+ of 300 tokens used/);
+});
+
+test("the budget is spent verified-first", async () => {
+  const body = (tag: string): string => `${tag}: ${"word ".repeat(160)}`;
+  const root = await vaultWith([
+    { path: "facts/q.md", kind: "fact", text: body("quarantined") },
+    { path: "facts/v.md", kind: "fact", text: body("verified"), status: "verified", verifiedBy: "alice" },
+  ]);
+  const result = await loadContext(root, POLICY, AGENT, { tokenBudget: 300 });
+  assert.equal(result.included, 1);
+  assert.match(result.text, /verified:/);
+  assert.doesNotMatch(result.text, /quarantined:/);
+});
+
+test("a generous budget returns everything readable", async () => {
+  const root = await vaultWith([
+    { path: "facts/a.md", kind: "fact", text: "Short one." },
+    { path: "facts/b.md", kind: "fact", text: "Short two." },
+  ]);
+  const result = await loadContext(root, POLICY, AGENT, { tokenBudget: 8000 });
+  assert.equal(result.included, 2);
+  assert.ok(result.approxTokens <= 8000);
+});
+
 test("each record is individually framed with the nonce, and the header names it", async () => {
   const root = await vaultWith([{ path: "facts/a.md", kind: "fact", text: "A framed record." }]);
   const result = await loadContext(root, POLICY, AGENT);
