@@ -98,7 +98,18 @@ and read but never promote or retire a record:
 | `cohort bridge` / `reabsorb` | Generate AGENTS.md, CLAUDE.md, Cursor rules, and fold hand-edits back as gated proposals. |
 | `cohort export` / `import` | Move a whole vault losslessly on a portable schema. |
 
-The engine and CLI live in [`cohort-mcp/`](cohort-mcp/).
+The engine and CLI live in [`cohort-mcp/`](cohort-mcp/). It is published to npm
+as [`cohort-mcp`](https://www.npmjs.com/package/cohort-mcp) and listed in the
+[MCP Registry](https://registry.modelcontextprotocol.io) as
+`io.github.magnusmage/cohort-mcp`, so you can run it in one command:
+
+```sh
+claude mcp add cohort -- npx -y cohort-mcp     # register with Claude Code
+# or just run it: npx -y cohort-mcp
+```
+
+For Claude Desktop there is a one-click extension: build a `.mcpb` from
+[`desktop-extension/`](desktop-extension/) and double-click it to install.
 
 ## Quickstart
 

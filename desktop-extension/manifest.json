@@ -1,0 +1,38 @@
+{
+  "manifest_version": "0.3",
+  "name": "cohort",
+  "display_name": "Cohort shared memory",
+  "version": "0.1.0",
+  "description": "Shared AI memory for teams: a git vault of markdown, human-approved, injection-safe, local-only.",
+  "author": { "name": "evdatsion", "url": "https://github.com/magnusmage/cohort" },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/node_modules/cohort-mcp/dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/node_modules/cohort-mcp/dist/index.js"],
+      "env": { "COHORT_VAULT_DIR": "${user_config.vault_dir}" }
+    }
+  },
+  "user_config": {
+    "vault_dir": {
+      "type": "directory",
+      "title": "Vault folder",
+      "description": "The git folder that holds your team's Cohort memory (facts, decisions, threads).",
+      "required": true
+    }
+  },
+  "tools": [
+    { "name": "cohort_load", "description": "Return bounded, verified-first team context, fenced as data." },
+    { "name": "cohort_propose", "description": "Run proposed records through the server-enforced write gate." },
+    { "name": "cohort_status", "description": "Report policy, record counts, the quarantine queue, and stale records." },
+    { "name": "cohort_policy_get", "description": "Return the caller's effective, read-only policy limits." },
+    { "name": "cohort_search", "description": "Search the vault, verified-only by default." },
+    { "name": "cohort_why", "description": "Return a record's provenance, read from git history." }
+  ],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}

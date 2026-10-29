@@ -1,0 +1,9 @@
+{
+  "name": "cohort-desktop-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vendors the published cohort-mcp server into the Claude Desktop extension bundle.",
+  "dependencies": {
+    "cohort-mcp": "0.1.0"
+  }
+}
