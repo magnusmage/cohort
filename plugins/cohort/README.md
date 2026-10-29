@@ -5,6 +5,12 @@ teammate's AI reads and writes, with a human approving every change. This plugin
 bundles the `cohort` MCP server and a skill that tells Claude when and how to use
 it.
 
+## Install
+
+```
+/plugin install cohort --marketplace magnusmage/cohort
+```
+
 ## Use it
 
 Open your team's vault folder as the project, then ask to load team context (the
