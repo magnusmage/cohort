@@ -109,7 +109,13 @@ claude mcp add cohort -- npx -y cohort-mcp     # register with Claude Code
 ```
 
 For Claude Desktop there is a one-click extension: build a `.mcpb` from
-[`desktop-extension/`](desktop-extension/) and double-click it to install.
+[`desktop-extension/`](desktop-extension/) and double-click it to install. Or
+add this repo as a plugin marketplace and install the bundled plugin:
+
+```sh
+claude plugin marketplace add magnusmage/cohort
+claude plugin install cohort@cohort
+```
 
 ## Quickstart
 

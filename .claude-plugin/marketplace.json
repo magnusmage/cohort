@@ -1,0 +1,15 @@
+{
+  "name": "cohort",
+  "description": "Cohort: shared AI memory for teams, as a git vault of markdown.",
+  "owner": {
+    "name": "evdatsion",
+    "url": "https://github.com/magnusmage/cohort"
+  },
+  "plugins": [
+    {
+      "name": "cohort",
+      "source": "./plugins/cohort",
+      "description": "Load verified-first team context and propose human-approved writebacks to a local git vault. Local-only, injection-safe, no telemetry."
+    }
+  ]
+}

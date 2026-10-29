@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cohort": {
+      "command": "npx",
+      "args": ["-y", "cohort-mcp"]
+    }
+  }
+}
