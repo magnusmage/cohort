@@ -1,0 +1,11 @@
+{
+  "name": "cohort",
+  "displayName": "Cohort shared memory",
+  "version": "0.1.0",
+  "description": "Shared AI memory for teams: load verified-first team context and propose human-approved writebacks to a git vault of markdown. Local-only, injection-safe, no telemetry.",
+  "author": {
+    "name": "evdatsion",
+    "url": "https://github.com/magnusmage/cohort"
+  },
+  "license": "Apache-2.0"
+}
