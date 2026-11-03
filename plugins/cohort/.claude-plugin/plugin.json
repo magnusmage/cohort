@@ -7,5 +7,6 @@
     "name": "evdatsion",
     "url": "https://github.com/magnusmage/cohort"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "privacyPolicyUrl": "https://github.com/magnusmage/cohort/blob/main/PRIVACY.md"
 }

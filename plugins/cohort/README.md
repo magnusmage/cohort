@@ -20,6 +20,11 @@ you approve it from the terminal with `cohort verify`. Search with
 `cohort_search`, and ask why a record exists with `cohort_why`. Promotion and
 retirement are human-only, so the model can propose and read but never approve.
 
+## Privacy
+
+Cohort collects nothing: no account, no telemetry, no server that receives your
+data. See the full [Privacy policy](https://github.com/magnusmage/cohort/blob/main/PRIVACY.md).
+
 ## Data
 
 Everything runs on your machine. The server reads and writes your own git vault
