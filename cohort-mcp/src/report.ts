@@ -78,9 +78,9 @@ function findContradictions(records: LoadedRecord[]): ReportData["contradictions
   for (const fact of verifiedFacts) {
     const hit = detectContradiction(fact, verifiedFacts);
     if (!hit.conflict || !hit.withId) continue;
-    const key = [fact.meta.id, hit.withId].sort().join("|");
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const pairId = [fact.meta.id, hit.withId].sort().join("|");
+    if (seen.has(pairId)) continue;
+    seen.add(pairId);
     const other = byId.get(hit.withId);
     pairs.push({
       aId: fact.meta.id,
