@@ -7,6 +7,11 @@ project policy.
 
 ### Added
 
+- `cohort report`: a vault health view you can see. It writes a single
+  self-contained HTML file (no server, no scripts, no network) with record
+  coverage, contradictions among verified facts, overdue records, approval
+  latency read from git, and who proposes versus who approves. Every value that
+  comes from a record is escaped before it reaches the page.
 - Phases 2 through 5 of the `cohort-mcp` server, built on the Phase 1 engine:
   - Phase 2, the trust and safety spine: trust tiers with human-only
     verification (`cohort verify`), verified-first loading, and an adversarial
