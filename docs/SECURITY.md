@@ -145,6 +145,12 @@ client, stored memory, and a teammate's writeback are all untrusted.
 - Read-time data-fencing. `cohort_load` wraps returned memory in a
   treat-as-data envelope whose boundary carries a per-load nonce, so record
   content cannot forge the boundary and break out.
+- Hostile-character rejection. The record schema rejects C0 control characters
+  and the invisible and bidirectional format characters (zero-width space, word
+  joiner, bidi overrides and isolates, and the BOM) used for hidden injection
+  and Trojan-Source disguising. The instruction linter normalizes content (NFKC
+  and whitespace) before matching, so compatibility and spacing tricks do not
+  evade it.
 - Server-established identity. The agent identity comes from the install-time
   config, never a model argument, so the per-agent policy dial cannot be forged.
 - No model-callable approval. A pending proposal returns a handle a human

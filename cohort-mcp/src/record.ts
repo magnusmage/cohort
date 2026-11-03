@@ -36,6 +36,29 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\u0000-\u0008\u000b-\u001f\u007f]/;
 
+// Invisible and bidirectional control characters with no legitimate use in
+// readable prose: zero-width space, word joiner and the invisible math
+// operators, the bidi embeddings/overrides/isolates, and the byte-order mark.
+// These are the vectors for hidden prompt injection and Trojan-Source style
+// disguising, and they can smuggle text past the instruction linter, so a
+// record may not carry them. The zero-width joiner and non-joiner (U+200C,
+// U+200D) and the directional marks (U+200E, U+200F) are left allowed, because
+// they appear in legitimate multilingual text and emoji sequences.
+const DISALLOWED_FORMAT_CODE_POINTS = new Set<number>([
+  0x200b, 0x2060, 0x2061, 0x2062, 0x2063, 0x2064,
+  0x202a, 0x202b, 0x202c, 0x202d, 0x202e,
+  0x2066, 0x2067, 0x2068, 0x2069, 0xfeff,
+]);
+
+/** True when the text carries one of the forbidden invisible or bidirectional control characters. */
+function hasDisallowedFormat(text: string): boolean {
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (cp !== undefined && DISALLOWED_FORMAT_CODE_POINTS.has(cp)) return true;
+  }
+  return false;
+}
+
 const safeScalar = z.string().regex(SAFE_SCALAR, "must be a short scalar with no control characters");
 const dateOrNull = z.union([z.string().regex(DATE, "must be YYYY-MM-DD"), z.null()]);
 
@@ -82,6 +105,9 @@ function assertText(text: string): void {
   if (text.length < 1) throw new RecordError("record text must not be empty");
   if (text.length > 20000) throw new RecordError("record text exceeds 20000 characters");
   if (CONTROL_CHARS.test(text)) throw new RecordError("record text contains control characters");
+  if (hasDisallowedFormat(text)) {
+    throw new RecordError("record text contains disallowed invisible or bidirectional control characters");
+  }
 }
 
 function today(): string {
