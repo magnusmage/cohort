@@ -95,6 +95,7 @@ and read but never promote or retire a record:
 | `cohort supersede` | Mark a record replaced; it leaves load but stays in git history. |
 | `cohort index` | Build the committed, diffable retrieval index (`--check` to verify). |
 | `cohort stats` | Report record counts, writebacks, stale records, and current load size. |
+| `cohort report` | Write a self-contained HTML health view of the vault (coverage, contradictions, overdue, approval latency). Local only. |
 | `cohort bridge` / `reabsorb` | Generate AGENTS.md, CLAUDE.md, Cursor rules, and fold hand-edits back as gated proposals. |
 | `cohort export` / `import` | Move a whole vault losslessly on a portable schema. |
 
