@@ -1,0 +1,9 @@
+# Accepted false positives for the redaction scan, by gitleaks fingerprint.
+# Each line pins one finding to one commit, file, rule, and line, so it
+# suppresses only that exact match and nothing else.
+
+# A local TypeScript variable named `key` in cohort-mcp/src/report.ts matched the
+# dotenv-secret-assignment rule (KEY...=) in commit 076f02d. It is not a secret;
+# it was renamed to `pairId` in a later commit. This suppresses the finding in
+# the historical commit so the branch history scan passes.
+076f02d22215d7e4f2b8e3a61fc4d5771a424ec9:cohort-mcp/src/report.ts:dotenv-secret-assignment:81

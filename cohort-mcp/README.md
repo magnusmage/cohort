@@ -73,6 +73,7 @@ cohort init --vault <dir> --agent <id>            # seed policy, wire Claude, pr
 cohort verify --vault <dir> --by <handle> <id>    # promote a record from quarantined to verified
 cohort supersede --vault <dir> --old <id> --new <id>  # mark a record replaced; it leaves load, stays in history
 cohort stats --vault <dir>                        # record counts, writebacks, current load size
+cohort report --vault <dir> [--out <file>]        # self-contained HTML health view of the vault (local only)
 cohort index --vault <dir>                        # build the committed, diffable retrieval index (--check to verify)
 cohort bridge --vault <dir>                       # generate AGENTS.md, CLAUDE.md, Cursor rules from the vault
 cohort reabsorb --vault <dir> --file <name>       # reabsorb hand-edits to a generated file as gated proposals
