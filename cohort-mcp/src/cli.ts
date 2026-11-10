@@ -14,6 +14,7 @@ import { buildIndex, indexStatus, writeIndex } from "./indexer.js";
 import { exportVault, importVault, parsePortable, serializePortable } from "./portable.js";
 import { loadPolicy } from "./policy.js";
 import { reabsorbFile } from "./reabsorb.js";
+import { computeReport, renderReport } from "./report.js";
 import { computeStats } from "./stats.js";
 import { supersedeRecord } from "./supersede.js";
 import { verifyRecords } from "./verify.js";
@@ -35,6 +36,7 @@ const USAGE = [
   "  cohort verify --vault <dir> --by <handle> <id> [<id>...]",
   "  cohort supersede --vault <dir> --old <id> --new <id>",
   "  cohort stats --vault <dir> [--agent <id>]",
+  "  cohort report --vault <dir> [--out <file>]",
   "  cohort index --vault <dir> [--check]",
   "  cohort bridge --vault <dir> [--include-quarantined]",
   "  cohort reabsorb --vault <dir> --file <name> [--agent <id>]",
@@ -172,6 +174,28 @@ async function runStats(args: string[]): Promise<void> {
   );
 }
 
+async function runReport(args: string[]): Promise<void> {
+  let vaultDir: string | undefined;
+  let out: string | undefined;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--vault") vaultDir = args[(i += 1)];
+    else if (arg === "--out") out = args[(i += 1)];
+  }
+  if (!vaultDir) {
+    process.stderr.write(`cohort report: --vault is required\n${USAGE}\n`);
+    process.exit(2);
+  }
+  const data = await computeReport(vaultDir);
+  const html = renderReport(data);
+  const target = out ?? "cohort-report.html";
+  await writeFile(target, html, "utf8");
+  process.stdout.write(
+    `wrote ${target}: ${data.totals.total} record(s), ${data.contradictions.length} contradiction(s), ` +
+      `${data.stale.length} overdue; open it in a browser\n`,
+  );
+}
+
 async function runIndex(args: string[]): Promise<void> {
   let vaultDir: string | undefined;
   let check = false;
@@ -286,6 +310,7 @@ async function main(): Promise<void> {
   else if (command === "verify") await runVerify(rest);
   else if (command === "supersede") await runSupersede(rest);
   else if (command === "stats") await runStats(rest);
+  else if (command === "report") await runReport(rest);
   else if (command === "index") await runIndex(rest);
   else if (command === "bridge") await runBridge(rest);
   else if (command === "reabsorb") await runReabsorb(rest);
