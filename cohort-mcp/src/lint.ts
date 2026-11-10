@@ -11,7 +11,7 @@
  * linter. Bump RULESET_VERSION when the rules change.
  */
 
-export const RULESET_VERSION = "1";
+export const RULESET_VERSION = "2";
 
 export interface LintRule {
   id: string;
@@ -41,11 +41,24 @@ export interface LintResult {
   version: string;
 }
 
+/**
+ * Fold the easy evasions before matching. NFKC collapses compatibility forms
+ * (for example fullwidth Latin letters) to their plain equivalents, and runs of
+ * whitespace become a single space, so spacing and compatibility tricks do not
+ * slip a directive past the patterns. Record-level validation already rejects
+ * zero-width and bidirectional control characters, so this focuses on the
+ * remaining compatibility and spacing shapes.
+ */
+export function normalizeForLint(content: string): string {
+  return content.normalize("NFKC").replace(/\s+/g, " ");
+}
+
 export function lintForInjection(content: string): LintResult {
+  const normalized = normalizeForLint(content);
   const reasons: string[] = [];
   const ruleIds: string[] = [];
   for (const rule of RULES) {
-    if (rule.pattern.test(content)) {
+    if (rule.pattern.test(normalized)) {
       reasons.push(rule.label);
       ruleIds.push(rule.id);
     }

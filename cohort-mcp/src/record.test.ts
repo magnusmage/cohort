@@ -74,3 +74,31 @@ test("thread fields are preserved only when present", () => {
   const fact = createRecord({ kind: "fact", text: "No thread fields here.", source });
   assert.equal("state" in fact.meta, false);
 });
+
+test("rejects invisible and bidirectional controls, allows legitimate joiners", () => {
+  for (const bad of [
+    "zero​width",        // zero-width space
+    "word⁠joiner",       // word joiner
+    "bidi‮override",     // right-to-left override
+    "isolate⁦here",      // left-to-right isolate
+    "bom﻿here",          // byte-order mark
+  ]) {
+    assert.throws(() => createRecord({ kind: "fact", text: bad, source }), /invisible or bidirectional/);
+  }
+
+  // Zero-width joiner/non-joiner and directional marks are legitimate in
+  // multilingual text and emoji sequences, and stay allowed.
+  const ok = createRecord({
+    kind: "fact",
+    text: "family \u{1F468}‍\u{1F469}‍\u{1F467}, Arabic ‌ join, mark ‎ ok",
+    source,
+  });
+  assert.equal(ok.meta.status, "quarantined");
+
+  // A record carrying a bidi override cannot be parsed either: fail closed on read.
+  const serialized =
+    "---\nid: f-000000000000\nkind: fact\nstatus: quarantined\nconfidence: medium\n" +
+    "added: 2025-01-01\nreview_by: null\nsupersedes: null\nverified_by: null\n" +
+    "source:\n  agent: a\n  model: m\n  commit: null\n---\nhidden‮override";
+  assert.throws(() => parseRecord(serialized), /invisible or bidirectional/);
+});

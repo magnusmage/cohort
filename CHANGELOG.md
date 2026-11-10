@@ -5,6 +5,16 @@ project policy.
 
 ## [Unreleased]
 
+### Security
+
+- Record text now rejects the invisible and bidirectional control characters
+  (zero-width space, word joiner, the bidi overrides and isolates, and the byte
+  order mark) that are used for hidden prompt injection and Trojan-Source style
+  disguising, alongside the existing C0 control rejection. The zero-width
+  joiner, non-joiner, and directional marks stay allowed for legitimate
+  multilingual text. The instruction linter now normalizes content (NFKC and
+  whitespace) before matching, so fullwidth and spacing tricks do not evade it.
+
 ### Added
 
 - `cohort report`: a vault health view you can see. It writes a single
