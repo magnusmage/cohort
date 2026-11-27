@@ -50,7 +50,13 @@ export interface LintResult {
  * remaining compatibility and spacing shapes.
  */
 export function normalizeForLint(content: string): string {
-  return content.normalize("NFKC").replace(/\s+/g, " ");
+  // Local stopgap for the ZWJ/ZWNJ seam: record-level validation deliberately
+  // keeps 0x200C/0x200D (legitimate in Indic scripts and emoji sequences), but
+  // they are invisible word boundaries to a reader and must normalize as one
+  // (replace with a space, NOT delete — deleting fuses "ignore all" into
+  // "ignoreall" and hides the directive from the patterns). Matching-only:
+  // stored record text is untouched.
+  return content.normalize("NFKC").replace(/[\u200C\u200D]/g, " ").replace(/\s+/g, " ");
 }
 
 export function lintForInjection(content: string): LintResult {
